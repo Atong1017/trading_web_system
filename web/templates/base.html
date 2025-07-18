@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}台灣股票回測+自動下單系統{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <style>
+        html, body {
+            height: 100%;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            border-right: 1px solid #e0e0e0;
+        }
+        .main-content {
+            margin-left: 280px;
+            width: calc(100vw - 240px);
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
+        
+        .sidebar .position-sticky {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+        
+        .table-responsive {
+            margin-top: 20px;
+        }
+        
+        .chart-container {
+            margin-top: 20px;
+            height: 400px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .alert {
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: #007bff;
+        }
+        
+        .file-upload input[type="file"] {
+            display: none;
+        }
+        
+        .strategy-card {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .strategy-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .strategy-card.selected {
+            border-color: #007bff;
+            background-color: #f8f9ff;
+        }
+        
+        /* 自定義勾選開關樣式 - 橫移綠色 */
+        .custom-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+            background-color: #ccc;
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .custom-toggle-switch.active {
+            background-color: #28a745;
+        }
+
+        .custom-toggle-switch .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .custom-toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .custom-toggle-switch input[type="checkbox"] {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        /* 主題切換功能 */
+        .theme-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .theme-switcher .btn {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .theme-switcher .btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* 深色主題樣式 */
+        body.dark-theme {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        body.dark-theme .card {
+            background-color: #2d2d2d;
+            border-color: #404040;
+        }
+
+        body.dark-theme .card-header {
+            background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+            color: #ffffff;
+        }
+
+        body.dark-theme .table {
+            background-color: #2d2d2d;
+            color: #ffffff;
+        }
+
+        body.dark-theme .table thead th {
+            background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+            color: #ffffff;
+            border-color: #404040;
+        }
+
+        body.dark-theme .table tbody tr {
+            background-color: #2d2d2d;
+            color: #ffffff;
+        }
+
+        body.dark-theme .table tbody tr:hover {
+            background-color: #404040;
+        }
+
+        body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #353535;
+        }
+
+        body.dark-theme .form-control {
+            background-color: #404040;
+            border-color: #555555;
+            color: #ffffff;
+        }
+
+        body.dark-theme .form-control:focus {
+            background-color: #404040;
+            border-color: #667eea;
+            color: #ffffff;
+        }
+
+        body.dark-theme .form-select {
+            background-color: #404040;
+            border-color: #555555;
+            color: #ffffff;
+        }
+
+        body.dark-theme .form-select:focus {
+            background-color: #404040;
+            border-color: #667eea;
+            color: #ffffff;
+        }
+
+        body.dark-theme .btn-outline-primary {
+            color: #667eea;
+            border-color: #667eea;
+        }
+
+        body.dark-theme .btn-outline-primary:hover {
+            background-color: #667eea;
+            color: #ffffff;
+        }
+
+        body.dark-theme .navbar {
+            background-color: #2d2d2d !important;
+        }
+
+        body.dark-theme .sidebar {
+            background-color: #2d2d2d !important;
+        }
+
+        body.dark-theme .nav-link {
+            color: #ffffff !important;
+        }
+
+        body.dark-theme .nav-link:hover {
+            color: #667eea !important;
+        }
+
+        body.dark-theme .modal-content {
+            background-color: #2d2d2d;
+            color: #ffffff;
+        }
+
+        body.dark-theme .modal-header {
+            background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+            color: #ffffff;
+            border-bottom-color: #404040;
+        }
+
+        body.dark-theme .modal-footer {
+            border-top-color: #404040;
+        }
+
+        body.dark-theme .alert {
+            background-color: #404040;
+            border-color: #555555;
+            color: #ffffff;
+        }
+
+        body.dark-theme .text-muted {
+            color: #aaaaaa !important;
+        }
+
+        body.dark-theme .border {
+            border-color: #404040 !important;
+        }
+
+        body.dark-theme .border-bottom {
+            border-bottom-color: #404040 !important;
+        }
+
+        body.dark-theme .border-top {
+            border-top-color: #404040 !important;
+        }
+
+        body.dark-theme .border-left {
+            border-left-color: #404040 !important;
+        }
+
+        body.dark-theme .border-right {
+            border-right-color: #404040 !important;
+        }
+        
+        /* 功能區導航樣式 */
+        .feature-nav-area {
+            margin-top: auto;
+            padding: 16px 12px 12px 12px;
+            flex-grow: 0;
+        }
+        
+        .feature-nav {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: #fff;
+            padding: 18px 12px 10px 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            font-size: 0.98rem;
+        }
+        
+        .feature-nav h4 {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 18px;
+            text-align: center;
+        }
+        
+        .feature-section {
+            margin-bottom: 18px;
+        }
+        
+        .feature-section h5 {
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.18);
+            padding-bottom: 3px;
+        }
+        
+        .feature-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+        
+        .feature-link {
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            padding: 6px 13px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-size: 0.92rem;
+            border: 1px solid rgba(255,255,255,0.22);
+            transition: all 0.2s;
+        }
+        
+        .feature-link:hover {
+            background: rgba(255,255,255,0.32);
+            color: #fff;
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+        
+        /* 深色主題下的功能區導航 */
+        body.dark-theme .feature-nav {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+        }
+        
+        body.dark-theme .feature-link {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        body.dark-theme .feature-link:hover {
+            background: rgba(255,255,255,0.25);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="sidebar">
+        <div class="position-sticky pt-3">
+            <div class="text-center mb-4 d-flex align-items-center justify-content-center" style="gap: 10px;">
+                <h4 class="mb-0"><i class="fas fa-chart-line text-primary"></i> 交易系統</h4>
+                <button class="btn btn-outline-primary theme-switcher-btn" id="themeToggle" title="切換主題" style="margin-left:10px;">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">
+                        <i class="fas fa-home"></i> 首頁
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/backtest">
+                        <i class="fas fa-chart-bar"></i> 回測
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/auto-trading">
+                        <i class="fas fa-robot"></i> 自動下單
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/trading-records">
+                        <i class="fas fa-history"></i> 交易記錄
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/stock-selector">
+                        <i class="fas fa-filter"></i> 選股編輯器
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/strategy-editor">
+                        <i class="fas fa-code"></i> 策略編輯器
+                    </a>
+                </li>                        
+                <li class="nav-item">
+                    <a class="nav-link" href="/cache-manager">
+                        <i class="fas fa-database"></i> 快取管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">
+                        <i class="fas fa-cog"></i> 設定
+                    </a>
+                </li>
+            </ul>
+            <!-- 功能區導航 -->
+            <div class="feature-nav-area">
+                {% block feature_nav %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    {% block scripts %}{% endblock %}
+    
+    <script>
+        // 全域變數
+        let currentStrategy = null;
+        let currentParameters = {};
+        
+        // 顯示載入中
+        function showLoading() {
+            $('.loading').show();
+        }
+        
+        // 隱藏載入中
+        function hideLoading() {
+            $('.loading').hide();
+        }
+        
+        // 顯示訊息
+        function showMessage(message, type = 'info') {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('.main-content').prepend(alertHtml);
+        }
+        
+        // 顯示錯誤訊息
+        function showError(message) {
+            showMessage(message, 'danger');
+        }
+        
+        // 格式化數字
+        function formatNumber(num, decimals = 2) {
+            return parseFloat(num).toFixed(decimals);
+        }
+        
+        // 格式化百分比
+        function formatPercentage(num, decimals = 2) {
+            return (parseFloat(num) * 100).toFixed(decimals) + '%';
+        }
+        
+        // 格式化日期
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('zh-TW');
+        }
+        
+        // 檔案上傳處理
+        function handleFileUpload(input, callback) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    callback(e.target.result, file.name);
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        // 策略選擇處理
+        function selectStrategy(strategyName) {
+            $('.strategy-card').removeClass('selected');
+            $(`.strategy-card[data-strategy="${strategyName}"]`).addClass('selected');
+            currentStrategy = strategyName;
+            
+            // 載入策略參數
+            loadStrategyParameters(strategyName);
+        }
+        
+        // 載入策略參數
+        function loadStrategyParameters(strategyName) {
+            fetch(`/api/strategy/${strategyName}/parameters`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        currentParameters = data.parameters;
+                        displayParameters(data.parameters);
+                    }
+                })
+                .catch(error => {
+                    console.error('載入策略參數失敗:', error);
+                });
+        }
+        
+        // 顯示參數
+        function displayParameters(parameters) {
+            const container = $('#parameters-container');
+            container.empty();
+            
+            Object.entries(parameters).forEach(([key, value]) => {
+                const paramHtml = `
+                    <div class="form-group">
+                        <label for="${key}" class="form-label">${key}</label>
+                        <input type="number" class="form-control" id="${key}" 
+                               value="${value}" step="0.01">
+                    </div>
+                `;
+                container.append(paramHtml);
+            });
+        }
+        
+        // 取得參數值
+        function getParameters() {
+            const params = {};
+            $('#parameters-container input').each(function() {
+                const key = $(this).attr('id');
+                const value = parseFloat($(this).val());
+                params[key] = value;
+            });
+            return params;
+        }
+        
+        // 繪製圖表
+        function plotChart(containerId, data, layout = {}) {
+            const defaultLayout = {
+                title: '圖表',
+                xaxis: { title: '日期' },
+                yaxis: { title: '數值' },
+                height: 400
+            };
+            
+            const finalLayout = { ...defaultLayout, ...layout };
+            
+            Plotly.newPlot(containerId, data, finalLayout, {
+                responsive: true,
+                displayModeBar: false
+            });
+        }
+        
+        // 下載檔案
+        function downloadFile(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // 頁面載入完成
+        $(document).ready(function() {
+            // 初始化工具提示
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // 檔案上傳拖放功能
+            $('.file-upload').on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('border-primary');
+            });
+            
+            $('.file-upload').on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).removeClass('border-primary');
+            });
+            
+            $('.file-upload').on('drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('border-primary');
+                
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    const input = $(this).find('input[type="file"]')[0];
+                    input.files = files;
+                    $(input).trigger('change');
+                }
+            });
+            
+            // 檢查本地儲存的主題設定
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(currentTheme);
+            
+            // 主題切換按鈕點擊事件
+            $('#themeToggle').click(function() {
+                const currentTheme = $('body').hasClass('dark-theme') ? 'light' : 'dark';
+                applyTheme(currentTheme);
+                localStorage.setItem('theme', currentTheme);
+            });
+        });
+        
+        // 套用主題
+        function applyTheme(theme) {
+            const body = $('body');
+            const themeIcon = $('#themeIcon');
+            
+            if (theme === 'dark') {
+                body.addClass('dark-theme');
+                themeIcon.removeClass('fa-moon').addClass('fa-sun');
+                $('#themeToggle').attr('title', '切換為淺色主題');
+                
+                // 同步 CodeMirror 編輯器主題
+                if (window.codeEditor) {
+                    window.codeEditor.setOption('theme', 'monokai');
+                }
+            } else {
+                body.removeClass('dark-theme');
+                themeIcon.removeClass('fa-sun').addClass('fa-moon');
+                $('#themeToggle').attr('title', '切換為深色主題');
+                
+                // 同步 CodeMirror 編輯器主題
+                if (window.codeEditor) {
+                    window.codeEditor.setOption('theme', 'eclipse');
+                }
+            }
+        }
+        
+        // 自定義勾選開關功能
+        function createCustomToggle(containerId, label, checked = false, onChange = null) {
+            const container = $(`#${containerId}`);
+            const toggleId = `toggle_${Date.now()}`;
+            
+            const toggleHtml = `
+                <div class="d-flex align-items-center mb-2">
+                    <label class="me-3">${label}</label>
+                    <div class="custom-toggle-switch ${checked ? 'active' : ''}" onclick="toggleCustomSwitch('${toggleId}')">
+                        <input type="checkbox" id="${toggleId}" ${checked ? 'checked' : ''}>
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            `;
+            
+            container.append(toggleHtml);
+            
+            if (onChange) {
+                $(`#${toggleId}`).change(onChange);
+            }
+            
+            return toggleId;
+        }
+        
+        // 切換自定義開關
+        function toggleCustomSwitch(toggleId) {
+            const toggle = $(`#${toggleId}`);
+            const switchContainer = toggle.closest('.custom-toggle-switch');
+            const isChecked = toggle.is(':checked');
+            
+            // 切換狀態
+            toggle.prop('checked', !isChecked);
+            switchContainer.toggleClass('active', !isChecked);
+            
+            console.log(`開關 ${toggleId} 狀態: ${!isChecked ? '開啟' : '關閉'}`);
+        }
+    </script>
+</body>
+</html> 

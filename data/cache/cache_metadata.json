@@ -1,0 +1,50 @@
+{
+  "3423d4112e98e439c0d572914bf28f89": {
+    "stock_id": "multiple",
+    "start_date": "2022-11-12",
+    "end_date": "2023-06-30",
+    "data_type": "price",
+    "description": "multiple (2022-11-12 ~ 2023-06-30)",
+    "created_at": "2025-07-04T10:03:49.492159",
+    "last_accessed": "2025-07-04T10:03:49.492159",
+    "expires_at": "2025-07-05T10:03:49.492159",
+    "size_bytes": 43269730,
+    "rows": 270277
+  },
+  "90e87a986349cdfa93c993ee6c7bccd8": {
+    "stock_id": "multiple",
+    "start_date": "2025-04-15",
+    "end_date": "2025-07-04",
+    "data_type": "price",
+    "description": "multiple (2025-04-15 ~ 2025-07-04)",
+    "created_at": "2025-07-04T14:53:27.083869",
+    "last_accessed": "2025-07-04T14:53:27.083869",
+    "expires_at": "2025-07-05T14:53:27.083869",
+    "size_bytes": 16990052,
+    "rows": 106017
+  },
+  "0c054dfeddadad62d160fde63c26ee0c": {
+    "stock_id": "multiple",
+    "start_date": "2025-04-26",
+    "end_date": "2025-07-15",
+    "data_type": "price",
+    "description": "multiple (2025-04-26 ~ 2025-07-15)",
+    "created_at": "2025-07-15T18:31:48.290190",
+    "last_accessed": "2025-07-15T18:31:48.290190",
+    "expires_at": "2025-07-16T18:31:48.290190",
+    "size_bytes": 16380691,
+    "rows": 102214
+  },
+  "7c04c6fac091919f2e77f97a2a0c2551": {
+    "stock_id": "multiple",
+    "start_date": "2025-04-26",
+    "end_date": "2025-07-01",
+    "data_type": "price",
+    "description": "multiple (2025-04-26 ~ 2025-07-01)",
+    "created_at": "2025-07-15T18:32:30.221985",
+    "last_accessed": "2025-07-15T18:32:30.221985",
+    "expires_at": "2025-07-16T18:32:30.221985",
+    "size_bytes": 13651766,
+    "rows": 85186
+  }
+}

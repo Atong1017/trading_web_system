@@ -1,0 +1,919 @@
+{% extends "base.html" %}
+
+{% block title %}系統設定{% endblock %}
+
+{% block feature_nav %}
+<div class="feature-nav">
+    <h4><i class="fas fa-compass"></i> 功能區導航</h4>
+    <!-- 系統設定功能區 -->
+    <div class="feature-section">
+        <h5><i class="fas fa-cog"></i> 系統設定功能</h5>
+        <div class="feature-links">
+            <a href="/settings#api-settings" class="feature-link">API設定🔌</a>
+            <a href="/settings#trading-settings" class="feature-link">交易設定💰</a>
+            <a href="/settings#system-settings" class="feature-link">系統設定⚙️</a>
+            <a href="/settings#backup-settings" class="feature-link">備份設定💾</a>
+        </div>
+    </div>    
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-cogs"></i> 系統設定
+            </h2>
+        </div>
+    </div>
+
+    <!-- 設定導航 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="api-tab" data-toggle="tab" href="#api-settings" role="tab">
+                        <i class="fas fa-plug"></i> API設定
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="trading-tab" data-toggle="tab" href="#trading-settings" role="tab">
+                        <i class="fas fa-chart-line"></i> 交易設定
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="system-tab" data-toggle="tab" href="#system-settings" role="tab">
+                        <i class="fas fa-server"></i> 系統設定
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="backup-tab" data-toggle="tab" href="#backup-settings" role="tab">
+                        <i class="fas fa-database"></i> 備份設定
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 設定內容 -->
+    <div class="tab-content" id="settingsTabContent">
+        <!-- API設定 -->
+        <div class="tab-pane fade show active" id="api-settings" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-plug"></i> 股票資料API設定</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="stock-api-form">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="stock-api-provider">API提供者</label>
+                                            <select class="form-control" id="stock-api-provider" required>
+                                                <option value="twse">台灣證券交易所</option>
+                                                <option value="tpex">櫃買中心</option>
+                                                <option value="yahoo">Yahoo Finance</option>
+                                                <option value="custom">自訂API</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="stock-api-key">API金鑰</label>
+                                            <input type="password" class="form-control" id="stock-api-key" 
+                                                   placeholder="請輸入API金鑰">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="stock-api-url">API網址</label>
+                                            <input type="url" class="form-control" id="stock-api-url" 
+                                                   placeholder="https://api.example.com">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="stock-api-timeout">請求超時(秒)</label>
+                                            <input type="number" class="form-control" id="stock-api-timeout" 
+                                                   value="30" min="5" max="300">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> 儲存股票API設定
+                                        </button>
+                                        <button type="button" class="btn btn-info" id="test-stock-api">
+                                            <i class="fas fa-test-tube"></i> 測試連線
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-university"></i> 券商API設定</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="broker-api-form">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="broker-provider">券商</label>
+                                            <select class="form-control" id="broker-provider" required>
+                                                <option value="">請選擇券商</option>
+                                                <option value="fugle">富果證券</option>
+                                                <option value="sinopac">永豐金證券</option>
+                                                <option value="kgi">凱基證券</option>
+                                                <option value="yuanta">元大證券</option>
+                                                <option value="custom">自訂券商</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="broker-api-key">API金鑰</label>
+                                            <input type="password" class="form-control" id="broker-api-key" 
+                                                   placeholder="請輸入券商API金鑰" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="broker-secret">API密鑰</label>
+                                            <input type="password" class="form-control" id="broker-secret" 
+                                                   placeholder="請輸入API密鑰" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="broker-account">帳號</label>
+                                            <input type="text" class="form-control" id="broker-account" 
+                                                   placeholder="請輸入交易帳號" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="broker-api-url">API網址</label>
+                                            <input type="url" class="form-control" id="broker-api-url" 
+                                                   placeholder="https://api.broker.com">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="broker-environment">環境</label>
+                                            <select class="form-control" id="broker-environment">
+                                                <option value="production">正式環境</option>
+                                                <option value="sandbox">測試環境</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> 儲存券商API設定
+                                        </button>
+                                        <button type="button" class="btn btn-info" id="test-broker-api">
+                                            <i class="fas fa-test-tube"></i> 測試連線
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 交易設定 -->
+        <div class="tab-pane fade" id="trading-settings" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-line"></i> 交易參數設定</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="trading-params-form">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="default-commission">預設手續費率(%)</label>
+                                            <input type="number" class="form-control" id="default-commission" 
+                                                   value="0.1425" min="0" max="1" step="0.0001">
+                                            <small class="form-text text-muted">預設為0.1425%</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="min-commission">最低手續費</label>
+                                            <input type="number" class="form-control" id="min-commission" 
+                                                   value="20" min="0" step="1">
+                                            <small class="form-text text-muted">預設為20元</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="securities-tax">證交稅率(%)</label>
+                                            <input type="number" class="form-control" id="securities-tax" 
+                                                   value="0.3" min="0" max="1" step="0.01">
+                                            <small class="form-text text-muted">預設為0.3%</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="default-capital">預設初始資金</label>
+                                            <input type="number" class="form-control" id="default-capital" 
+                                                   value="1000000" min="10000" step="10000">
+                                            <small class="form-text text-muted">預設為100萬元</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="max-positions">最大同時持倉數</label>
+                                            <input type="number" class="form-control" id="max-positions" 
+                                                   value="5" min="1" max="20">
+                                            <small class="form-text text-muted">預設為5個</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="risk-per-trade">每筆交易風險比例(%)</label>
+                                            <input type="number" class="form-control" id="risk-per-trade" 
+                                                   value="2" min="0.1" max="10" step="0.1">
+                                            <small class="form-text text-muted">預設為2%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> 儲存交易參數
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" id="reset-trading-params">
+                                            <i class="fas fa-undo"></i> 重置為預設值
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系統設定 -->
+        <div class="tab-pane fade" id="system-settings" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-server"></i> 系統參數設定</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="system-params-form">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="log-level">日誌等級</label>
+                                            <select class="form-control" id="log-level">
+                                                <option value="DEBUG">DEBUG</option>
+                                                <option value="INFO" selected>INFO</option>
+                                                <option value="WARNING">WARNING</option>
+                                                <option value="ERROR">ERROR</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="max-log-files">最大日誌檔案數</label>
+                                            <input type="number" class="form-control" id="max-log-files" 
+                                                   value="10" min="1" max="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="session-timeout">會話超時時間(分鐘)</label>
+                                            <input type="number" class="form-control" id="session-timeout" 
+                                                   value="30" min="5" max="480">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="max-upload-size">最大上傳檔案大小(MB)</label>
+                                            <input type="number" class="form-control" id="max-upload-size" 
+                                                   value="50" min="1" max="500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="auto-cleanup-days">自動清理天數</label>
+                                            <input type="number" class="form-control" id="auto-cleanup-days" 
+                                                   value="30" min="1" max="365">
+                                            <small class="form-text text-muted">超過指定天數的檔案將被自動清理</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="enable-notifications">啟用通知</label>
+                                            <div class="custom-control custom-switch">
+                                                <input type="checkbox" class="custom-control-input" id="enable-notifications" checked>
+                                                <label class="custom-control-label" for="enable-notifications">啟用系統通知</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> 儲存系統參數
+                                        </button>
+                                        <button type="button" class="btn btn-warning" id="restart-system">
+                                            <i class="fas fa-redo"></i> 重新啟動系統
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 備份設定 -->
+        <div class="tab-pane fade" id="backup-settings" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-database"></i> 資料備份設定</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="backup-form">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="backup-frequency">備份頻率</label>
+                                            <select class="form-control" id="backup-frequency">
+                                                <option value="daily">每日</option>
+                                                <option value="weekly" selected>每週</option>
+                                                <option value="monthly">每月</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="backup-time">備份時間</label>
+                                            <input type="time" class="form-control" id="backup-time" value="02:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="backup-retention">保留天數</label>
+                                            <input type="number" class="form-control" id="backup-retention" 
+                                                   value="30" min="1" max="365">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="backup-path">備份路徑</label>
+                                            <input type="text" class="form-control" id="backup-path" 
+                                                   value="./backups" placeholder="請輸入備份路徑">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> 儲存備份設定
+                                        </button>
+                                        <button type="button" class="btn btn-success" id="create-backup">
+                                            <i class="fas fa-download"></i> 立即建立備份
+                                        </button>
+                                        <button type="button" class="btn btn-info" id="restore-backup">
+                                            <i class="fas fa-upload"></i> 還原備份
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-history"></i> 備份歷史</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>備份時間</th>
+                                            <th>檔案大小</th>
+                                            <th>狀態</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="backup-history">
+                                        <!-- 動態載入備份歷史 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 確認對話框 -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認操作</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirm-btn">確認</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 初始化頁面
+    initializePage();
+    
+    // 載入設定
+    loadSettings();
+    
+    // 表單提交事件
+    $('#stock-api-form').submit(function(e) {
+        e.preventDefault();
+        saveStockAPISettings();
+    });
+    
+    $('#broker-api-form').submit(function(e) {
+        e.preventDefault();
+        saveBrokerAPISettings();
+    });
+    
+    $('#trading-params-form').submit(function(e) {
+        e.preventDefault();
+        saveTradingSettings();
+    });
+    
+    $('#system-params-form').submit(function(e) {
+        e.preventDefault();
+        saveSystemSettings();
+    });
+    
+    $('#backup-form').submit(function(e) {
+        e.preventDefault();
+        saveBackupSettings();
+    });
+    
+    // 測試連線
+    $('#test-stock-api').click(function() {
+        testStockAPIConnection();
+    });
+    
+    $('#test-broker-api').click(function() {
+        testBrokerAPIConnection();
+    });
+    
+    // 其他按鈕事件
+    $('#reset-trading-params').click(function() {
+        resetTradingParams();
+    });
+    
+    $('#restart-system').click(function() {
+        showConfirmDialog('確定要重新啟動系統嗎？這將中斷所有正在進行的操作。', function() {
+            restartSystem();
+        });
+    });
+    
+    $('#create-backup').click(function() {
+        createBackup();
+    });
+    
+    $('#restore-backup').click(function() {
+        showRestoreBackupDialog();
+    });
+    
+    function initializePage() {
+        console.log('設定頁面初始化完成');
+    }
+    
+    function loadSettings() {
+        // 載入股票API設定
+        $.get('/api/settings/stock-api')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    const settings = response.settings;
+                    $('#stock-api-provider').val(settings.provider || 'twse');
+                    $('#stock-api-url').val(settings.url || '');
+                    $('#stock-api-timeout').val(settings.timeout || 30);
+                }
+            })
+            .fail(function(xhr) {
+                console.error('載入股票API設定失敗:', xhr.responseText);
+            });
+        
+        // 載入券商API設定
+        $.get('/api/settings/broker-api')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    const settings = response.settings;
+                    $('#broker-provider').val(settings.provider || '');
+                    $('#broker-api-url').val(settings.url || '');
+                    $('#broker-environment').val(settings.environment || 'production');
+                }
+            })
+            .fail(function(xhr) {
+                console.error('載入券商API設定失敗:', xhr.responseText);
+            });
+        
+        // 載入交易參數設定
+        $.get('/api/settings/trading')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    const settings = response.settings;
+                    $('#default-commission').val(settings.default_commission || 0.1425);
+                    $('#min-commission').val(settings.min_commission || 20);
+                    $('#securities-tax').val(settings.securities_tax || 0.3);
+                    $('#default-capital').val(settings.default_capital || 1000000);
+                    $('#max-positions').val(settings.max_positions || 5);
+                    $('#risk-per-trade').val(settings.risk_per_trade || 2);
+                }
+            })
+            .fail(function(xhr) {
+                console.error('載入交易參數設定失敗:', xhr.responseText);
+            });
+        
+        // 載入系統參數設定
+        $.get('/api/settings/system')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    const settings = response.settings;
+                    $('#log-level').val(settings.log_level || 'INFO');
+                    $('#max-log-files').val(settings.max_log_files || 10);
+                    $('#session-timeout').val(settings.session_timeout || 30);
+                    $('#max-upload-size').val(settings.max_upload_size || 50);
+                    $('#auto-cleanup-days').val(settings.auto_cleanup_days || 30);
+                    $('#enable-notifications').prop('checked', settings.enable_notifications !== false);
+                }
+            })
+            .fail(function(xhr) {
+                console.error('載入系統參數設定失敗:', xhr.responseText);
+            });
+        
+        // 載入備份設定
+        $.get('/api/settings/backup')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    const settings = response.settings;
+                    $('#backup-frequency').val(settings.frequency || 'weekly');
+                    $('#backup-time').val(settings.time || '02:00');
+                    $('#backup-retention').val(settings.retention || 30);
+                    $('#backup-path').val(settings.path || './backups');
+                }
+            })
+            .fail(function(xhr) {
+                console.error('載入備份設定失敗:', xhr.responseText);
+            });
+        
+        // 載入備份歷史
+        loadBackupHistory();
+    }
+    
+    function saveStockAPISettings() {
+        const settings = {
+            provider: $('#stock-api-provider').val(),
+            api_key: $('#stock-api-key').val(),
+            url: $('#stock-api-url').val(),
+            timeout: parseInt($('#stock-api-timeout').val())
+        };
+        
+        $.post('/api/settings/stock-api', settings)
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('股票API設定已儲存');
+                }
+            })
+            .fail(function(xhr) {
+                showError('儲存股票API設定失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function saveBrokerAPISettings() {
+        const settings = {
+            provider: $('#broker-provider').val(),
+            api_key: $('#broker-api-key').val(),
+            secret: $('#broker-secret').val(),
+            account: $('#broker-account').val(),
+            url: $('#broker-api-url').val(),
+            environment: $('#broker-environment').val()
+        };
+        
+        $.post('/api/settings/broker-api', settings)
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('券商API設定已儲存');
+                }
+            })
+            .fail(function(xhr) {
+                showError('儲存券商API設定失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function saveTradingSettings() {
+        const settings = {
+            default_commission: parseFloat($('#default-commission').val()),
+            min_commission: parseInt($('#min-commission').val()),
+            securities_tax: parseFloat($('#securities-tax').val()),
+            default_capital: parseInt($('#default-capital').val()),
+            max_positions: parseInt($('#max-positions').val()),
+            risk_per_trade: parseFloat($('#risk-per-trade').val())
+        };
+        
+        $.post('/api/settings/trading', settings)
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('交易參數設定已儲存');
+                }
+            })
+            .fail(function(xhr) {
+                showError('儲存交易參數設定失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function saveSystemSettings() {
+        const settings = {
+            log_level: $('#log-level').val(),
+            max_log_files: parseInt($('#max-log-files').val()),
+            session_timeout: parseInt($('#session-timeout').val()),
+            max_upload_size: parseInt($('#max-upload-size').val()),
+            auto_cleanup_days: parseInt($('#auto-cleanup-days').val()),
+            enable_notifications: $('#enable-notifications').is(':checked')
+        };
+        
+        $.post('/api/settings/system', settings)
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('系統參數設定已儲存');
+                }
+            })
+            .fail(function(xhr) {
+                showError('儲存系統參數設定失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function saveBackupSettings() {
+        const settings = {
+            frequency: $('#backup-frequency').val(),
+            time: $('#backup-time').val(),
+            retention: parseInt($('#backup-retention').val()),
+            path: $('#backup-path').val()
+        };
+        
+        $.post('/api/settings/backup', settings)
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('備份設定已儲存');
+                }
+            })
+            .fail(function(xhr) {
+                showError('儲存備份設定失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function testStockAPIConnection() {
+        const settings = {
+            provider: $('#stock-api-provider').val(),
+            api_key: $('#stock-api-key').val(),
+            url: $('#stock-api-url').val(),
+            timeout: parseInt($('#stock-api-timeout').val())
+        };
+        
+        $.post('/api/settings/test-stock-api', settings)
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('股票API連線測試成功');
+                }
+            })
+            .fail(function(xhr) {
+                showError('股票API連線測試失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function testBrokerAPIConnection() {
+        const settings = {
+            provider: $('#broker-provider').val(),
+            api_key: $('#broker-api-key').val(),
+            secret: $('#broker-secret').val(),
+            account: $('#broker-account').val(),
+            url: $('#broker-api-url').val(),
+            environment: $('#broker-environment').val()
+        };
+        
+        $.post('/api/settings/test-broker-api', settings)
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('券商API連線測試成功');
+                }
+            })
+            .fail(function(xhr) {
+                showError('券商API連線測試失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function resetTradingParams() {
+        $('#default-commission').val(0.1425);
+        $('#min-commission').val(20);
+        $('#securities-tax').val(0.3);
+        $('#default-capital').val(1000000);
+        $('#max-positions').val(5);
+        $('#risk-per-trade').val(2);
+        
+        showSuccess('交易參數已重置為預設值');
+    }
+    
+    function restartSystem() {
+        $.post('/api/system/restart')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('系統重新啟動中，請稍候...');
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 3000);
+                }
+            })
+            .fail(function(xhr) {
+                showError('重新啟動系統失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function createBackup() {
+        $.post('/api/backup/create')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('備份建立成功');
+                    loadBackupHistory();
+                }
+            })
+            .fail(function(xhr) {
+                showError('建立備份失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function loadBackupHistory() {
+        $.get('/api/backup/history')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    renderBackupHistory(response.backups);
+                }
+            })
+            .fail(function(xhr) {
+                console.error('載入備份歷史失敗:', xhr.responseText);
+            });
+    }
+    
+    function renderBackupHistory(backups) {
+        const tbody = $('#backup-history');
+        tbody.empty();
+        
+        if (backups.length === 0) {
+            tbody.append('<tr><td colspan="4" class="text-center text-muted">尚無備份記錄</td></tr>');
+            return;
+        }
+        
+        backups.forEach(function(backup) {
+            const row = $('<tr></tr>');
+            row.append(`<td>${formatDateTime(backup.created_at)}</td>`);
+            row.append(`<td>${formatFileSize(backup.size)}</td>`);
+            row.append(`<td><span class="badge badge-${backup.status === 'success' ? 'success' : 'danger'}">${backup.status === 'success' ? '成功' : '失敗'}</span></td>`);
+            row.append(`<td>
+                <button class="btn btn-sm btn-info" onclick="downloadBackup('${backup.filename}')">
+                    <i class="fas fa-download"></i> 下載
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="restoreBackup('${backup.filename}')">
+                    <i class="fas fa-upload"></i> 還原
+                </button>
+            </td>`);
+            tbody.append(row);
+        });
+    }
+    
+    function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString('zh-TW');
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function showConfirmDialog(message, callback) {
+        $('#confirm-message').text(message);
+        $('#confirm-btn').off('click').on('click', function() {
+            $('#confirmModal').modal('hide');
+            callback();
+        });
+        $('#confirmModal').modal('show');
+    }
+    
+    function showSuccess(message) {
+        showAlert('success', message);
+    }
+    
+    function showError(message) {
+        showAlert('danger', message);
+    }
+    
+    function showAlert(type, message) {
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        `;
+        $('.container-fluid').prepend(alertHtml);
+        
+        // 自動移除警告
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+    }
+});
+
+// 全域函數
+function downloadBackup(filename) {
+    window.open(`/api/backup/download/${filename}`, '_blank');
+}
+
+function restoreBackup(filename) {
+    if (confirm('確定要還原此備份嗎？這將覆蓋目前的資料。')) {
+        $.post(`/api/backup/restore/${filename}`)
+            .done(function(response) {
+                if (response.status === 'success') {
+                    alert('備份還原成功，系統將重新啟動');
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 2000);
+                }
+            })
+            .fail(function(xhr) {
+                alert('備份還原失敗: ' + xhr.responseText);
+            });
+    }
+}
+</script>
+{% endblock %} 

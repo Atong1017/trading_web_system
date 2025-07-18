@@ -1,0 +1,28 @@
+{
+  "strategy_id": "a77b4c4a-8815-4ee9-a0ac-42fbe7ff8ea5",
+  "cells": [
+    {
+      "id": "cell_1",
+      "code": "# Jupyter 向量化策略\n# 使用向量化計算處理所有資料\n# 請在 Jupyter 編輯器中實作您的策略\na = 1",
+      "outputs": "",
+      "metadata": {
+        "cell_type": "code",
+        "execution_count": 1
+      }
+    },
+    {
+      "id": "cell_2",
+      "code": "print(a)",
+      "outputs": "<div class=\"output-item\"><div class=\"output-stream stdout\">1\n1\n</div></div>",
+      "metadata": {
+        "cell_type": "code",
+        "execution_count": 1
+      }
+    }
+  ],
+  "metadata": {
+    "created": "2025-07-14T01:24:58.403225",
+    "total_cells": 2,
+    "version": "1.0"
+  }
+}

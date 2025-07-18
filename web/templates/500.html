@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}伺服器錯誤 - 台灣股票回測+自動下單系統{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mt-5">
+                <div class="error-page">
+                    <h1 class="display-1 text-danger">500</h1>
+                    <h2 class="mb-4">伺服器內部錯誤</h2>
+                    <p class="lead text-muted mb-4">
+                        抱歉，伺服器發生內部錯誤。我們正在努力修復這個問題。
+                    </p>
+                    <div class="mb-4">
+                        <a href="/" class="btn btn-primary me-2">
+                            <i class="fas fa-home"></i> 回到首頁
+                        </a>
+                        <a href="/backtest" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-chart-bar"></i> 策略回測
+                        </a>
+                        <a href="/auto-trading" class="btn btn-outline-success">
+                            <i class="fas fa-robot"></i> 自動下單
+                        </a>
+                    </div>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>提示：</strong> 請稍後再試，或聯繫系統管理員。
+                    </div>
+                    <div class="text-muted">
+                        <small>
+                            錯誤時間：{{ now }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    padding: 2rem 0;
+}
+
+.error-page .display-1 {
+    font-size: 6rem;
+    font-weight: 300;
+    color: #dc3545;
+}
+
+.error-page h2 {
+    color: #495057;
+}
+
+.error-page .lead {
+    font-size: 1.25rem;
+}
+
+.error-page .alert {
+    max-width: 500px;
+    margin: 0 auto;
+}
+</style>
+{% endblock %} 

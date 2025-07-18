@@ -1,0 +1,342 @@
+{
+  "dd8ff44d-af5c-4f13-ad0e-383e0a4f154b": {
+    "id": "dd8ff44d-af5c-4f13-ad0e-383e0a4f154b",
+    "name": "20日新高突破",
+    "description": "20日新高進場，開盤買進，收盤賣出",
+    "code": "# 動態參數策略範例\n# 展示如何使用動態參數來追蹤持有天數\n\ndef breaking_20_days_high(stock_data, current_index, excel_pl_df, **kwargs):\n    \"\"\"\n    判斷是否突破20日新高\n    Args:\n        stock_data: 股價資料 (polars DataFrame)\n        current_index: 當前資料索引\n        excel_pl_df: Excel股票列表 (polars DataFrame)\n        **kwargs: 額外參數\n        \n    Returns:\n        tuple: (是否突破20日新高, 突破20日新高資訊)\n    \"\"\"\n    current_row = stock_data.row(current_index, named=True)  # 當前欄位資料\n    excel_date = excel_pl_df['date'][0]  # 股票列表日期\n    stock_ids = [s.split(' ')[0].strip() for s in excel_pl_df['stock_id'].to_list()]  # 股票列表股票代碼列表\n    if excel_date <= current_row['date'] and current_row['stock_id'] in stock_ids:  # 如果股票列表日期小於等於當前日期，且當前股票代碼在股票列表中\n        prev_close_list = stock_data['close'][current_index - 20:current_index - 1].to_list()  # 前19天收盤價\n        prev_close = stock_data.row(current_index - 1, named=True)['close']  # 前一天收盤價\n        trade_direction = kwargs.get('trade_direction', None)  # 交易方向\n        # 如果前一天收盤價大於前19天收盤價的最大值，且交易方向為多頭\n        if prev_close > max(prev_close_list) and trade_direction == 'long':  \n            return True, {\"reason\": \"突破20日新高\"}\n        # 如果前一天收盤價小於前19天收盤價的最小值，且交易方向為空頭\n        elif prev_close < min(prev_close_list) and trade_direction == 'short':  \n            return True, {\"reason\": \"突破20日新低\"}\n            \n    return False, {}\n\ndef should_entry(stock_data, current_index, excel_pl_df, **kwargs):\n    \"\"\"\n    判斷是否應該進場\n    \n    Args:\n        stock_data: 股價資料 (polars DataFrame)\n        current_index: 當前資料索引\n        excel_pl_df: Excel股票列表 (polars DataFrame)\n        **kwargs: 額外參數\n        \n    Returns:\n        tuple: (是否進場, 進場資訊)\n    \"\"\"\n    # 突破20日新高時進場\n    if breaking_20_days_high(stock_data, current_index, excel_pl_df, **kwargs)[0]:\n        return True, {\"reason\": \"突破20日新高\"}\n    \n    return False, {}\n\ndef should_exit(stock_data, current_index, position, excel_pl_df, **kwargs):\n    \"\"\"\n    判斷是否應該出場\n    \n    Args:\n        stock_data: 股價資料 (polars DataFrame)\n        current_index: 當前資料索引\n        position: 當前持倉資訊\n        excel_pl_df: Excel股票列表 (polars DataFrame)\n        **kwargs: 額外參數，包含動態參數\n        \n    Returns:\n        tuple: (是否出場, 出場資訊)\n    \"\"\"    \n    # 當前欄位資料\n    current_row = stock_data.row(current_index, named=True)  \n    open_price = current_row['open']  # 開盤價\n    close_price = current_row['close']  # 收盤價\n    high_price = current_row['high']  # 最高價\n    low_price = current_row['low']  # 最低價\n    prev_row = stock_data.row(current_index - 1, named=True)  # 前一天欄位資料\n    prev_close_price = prev_row['close']  # 前一天收盤價\n    \n    entry_price = position[\"entry_price\"]  # 進場價格\n    # 交易方向\n    trade_direction = kwargs.get('trade_direction', 'long')\n    # 出場類型\n    exit_type = kwargs.get('exit_type', 'open')\n    # 停利/損、漲/跌停利率\n    max_profit_rate = float(kwargs.get('max_profit_rate', 20))\n    max_loss_rate = float(kwargs.get('max_loss_rate', -20))\n    up_limit_rate = float(kwargs.get('up_limit_rate', 9))\n    down_limit_rate = float(kwargs.get('down_limit_rate', -9))\n    # 停利/損價、漲/跌停價\n    profit_price = PriceUtils.calculate_limit_price(entry_price, max_profit_rate)\n    loss_price = PriceUtils.calculate_limit_price(entry_price, max_loss_rate)    \n    if trade_direction == 'short':\n        profit_price = PriceUtils.calculate_limit_price(entry_price, -max_profit_rate)\n        loss_price = PriceUtils.calculate_limit_price(entry_price, -max_loss_rate)\n    up_limit_price = PriceUtils.calculate_limit_price(prev_close_price, up_limit_rate)\n    down_limit_price = PriceUtils.calculate_limit_price(prev_close_price, down_limit_rate)\n    if trade_direction == 'short':\n        up_limit_price = PriceUtils.calculate_limit_price(prev_close_price, -up_limit_rate)\n        down_limit_price = PriceUtils.calculate_limit_price(prev_close_price, -down_limit_rate)\n        \n    # 出場條件\n    profit_enable = kwargs.get('profit_enable', '1')\n    loss_enable = kwargs.get('loss_enable', '1')\n    up_limit_enable = kwargs.get('up_limit_enable', '1')\n    down_limit_enable = kwargs.get('down_limit_enable', '1')\n    max_holding_days = kwargs.get('max_holding_days', 20)\n\n    # 強制出場條件\n    forced_profit_enable = kwargs.get('forced_profit_enable', '1')\n    forced_loss_enable = kwargs.get('forced_loss_enable', '1')\n    forced_up_limit_enable = kwargs.get('forced_up_limit_enable', '1')\n    forced_down_limit_enable = kwargs.get('forced_down_limit_enable', '1')    \n    forced_holding_days_enable = kwargs.get('forced_holding_days_enable', '1')\n    # 突破20日新高\n    break_20_days_high = breaking_20_days_high(stock_data, current_index, excel_pl_df)[0]\n    \n    # 檢查一字跌停\n    is_limit_down_result = PriceUtils.is_limit_down(\n        current_row['open'], \n        current_row['high'], \n        current_row['low'], \n        current_row['close'],\n        prev_close_price,\n        10, \n        -10, \n        'long'\n        )\n    \n    if is_limit_down_result == 1:\n        return False, {\"reason\": f\"一字跌停不出場\"}\n    \n    # 停利條件\n    elif profit_enable and (\n        (open_price >= profit_price and trade_direction == 'long') or \n        (open_price <= profit_price and trade_direction == 'short')\n        ):\n        if forced_profit_enable != '1' and break_20_days_high:\n            return False, {}\n        else:\n            return True, {\"exit_price\": open_price, \"reason\": f\"停利出場(開盤價)\"}\n        \n        \n    # 停利條件\n    elif profit_enable and (\n        (high_price >= profit_price and trade_direction == 'long') or \n        (low_price <= profit_price and trade_direction == 'short')\n        ):\n        # print(88888888888, current_row, forced_profit_enable, break_20_days_high, kwargs, self.parameters['holding_days'])\n        if forced_profit_enable != '1' and break_20_days_high:\n            return False, {}\n        else:            \n            return True, {\"exit_price\": profit_price, \"reason\": f\"停利出場(最高價)\"}\n    \n    # 停損條件\n    elif loss_enable and (\n        (open_price <= loss_price and trade_direction == 'long') or \n        (open_price >= loss_price and trade_direction == 'short')\n        ):\n        if forced_loss_enable != '1' and break_20_days_high:\n            return False, {}\n        else:\n            return True, {\"exit_price\": open_price, \"reason\": f\"停損出場(開盤價)\"}\n    \n    # 停損條件\n    elif loss_enable and (\n        (low_price <= loss_price and trade_direction == 'long') or \n        (high_price >= loss_price and trade_direction == 'short')\n        ):\n        if forced_loss_enable != '1' and break_20_days_high:\n            return False, {}\n        else:\n            return True, {\"exit_price\": loss_price, \"reason\": f\"停損出場(最低價)\"}\n    \n    # 漲停出場\n    elif up_limit_enable and (\n        (high_price >= up_limit_price and trade_direction == 'long') or \n        (low_price <= up_limit_price and trade_direction == 'short')\n        ):\n        if forced_up_limit_enable != '1' and break_20_days_high:\n            return False, {}\n        else:\n            return True, {\n            \"exit_price\": up_limit_price, \n            \"reason\": f\"漲停出場\", \n            \"prev_close_price\": prev_close_price,\n            \"up_limit_price\": up_limit_price}\n    \n    # 跌停出場\n    elif down_limit_enable and (\n        (low_price <= down_limit_price and trade_direction == 'long') or \n        (high_price >= down_limit_price and trade_direction == 'short')\n        ):\n        if forced_down_limit_enable != '1' and break_20_days_high:\n            return False, {}\n        else:\n            return True, {\n            \"exit_price\": down_limit_price, \n            \"reason\": f\"跌停出場\", \n            \"prev_close_price\": prev_close_price,\n            \"down_limit_price\": down_limit_price}\n    \n    # 天數出場\n    elif self.parameters['holding_days'] >= max_holding_days:\n        if forced_holding_days_enable and break_20_days_high:\n            return False, {}\n        else:\n            exit_price = open_price if exit_type == 'open' else close_price\n            exit_reason = f\"天數出場(開盤價)\" if exit_type == 'open' else f\"天數出場(收盤價)\"\n            \n            return True, {\"exit_price\": exit_price, \"reason\": exit_reason}\n    \n    # 不出場，系統會自動增加 holding_days\n    return False, {}    \n\n# 處理策略參數\ndef process_parameters(parameters=None):\n    \"\"\"\n    處理策略參數\n    \n    Args:\n        parameters: 輸入參數\n        \n    Returns:\n        dict: 處理後的參數\n    \"\"\"\n    # 在這裡處理參數邏輯\n    return parameters\n    \n# 驗證策略參數\ndef validate_parameters(parameters):\n    \"\"\"\n    驗證策略參數\n    \n    Args:\n        parameters: 策略參數\n        \n    Raises:\n        ValueError: 當參數無效時\n    \"\"\"\n    # 在這裡驗證參數\n    pass",
+    "parameters": {
+      "trade_direction": {
+        "type": "select",
+        "label": "做多/空",
+        "description": "",
+        "options": [
+          {
+            "value": "long",
+            "label": "做多"
+          },
+          {
+            "value": "short",
+            "label": "做空"
+          }
+        ],
+        "default": "long"
+      },
+      "record_holdings": {
+        "type": "boolean",
+        "label": "完整記錄",
+        "description": "是否記錄未出場",
+        "default": true
+      },
+      "entry_type": {
+        "type": "select",
+        "label": "進場價選項",
+        "description": "",
+        "options": [
+          {
+            "value": "open",
+            "label": "開盤價"
+          },
+          {
+            "value": "close",
+            "label": "收盤價"
+          }
+        ],
+        "default": "open"
+      },
+      "exit_type": {
+        "type": "select",
+        "label": "出場價選項",
+        "description": "",
+        "options": [
+          {
+            "value": "open",
+            "label": "開盤價"
+          },
+          {
+            "value": "close",
+            "label": "收盤價"
+          }
+        ],
+        "default": "open"
+      },
+      "up_limit_enable": {
+        "type": "boolean",
+        "label": "漲停出場",
+        "description": "",
+        "default": true
+      },
+      "forced_up_limit_enable": {
+        "type": "boolean",
+        "label": "強制漲停出場",
+        "description": "",
+        "default": true
+      },
+      "up_limit_rate": {
+        "type": "number",
+        "label": "漲停",
+        "description": "",
+        "default": 9,
+        "max": 100,
+        "step": 1
+      },
+      "down_limit_enable": {
+        "type": "boolean",
+        "label": "跌停出場",
+        "description": "",
+        "default": true
+      },
+      "forced_down_limit_enable": {
+        "type": "boolean",
+        "label": "強制跌停出場",
+        "description": "",
+        "default": true
+      },
+      "down_limit_rate": {
+        "type": "number",
+        "label": "跌停",
+        "description": "",
+        "default": -9,
+        "min": -100,
+        "step": 1
+      },
+      "profit_enable": {
+        "type": "boolean",
+        "label": "停利出場",
+        "description": "",
+        "default": true
+      },
+      "forced_profit_enable": {
+        "type": "boolean",
+        "label": "強制停利出場",
+        "description": "",
+        "default": true
+      },
+      "max_profit_rate": {
+        "type": "number",
+        "label": "停利",
+        "description": "",
+        "default": 20,
+        "max": 100,
+        "step": 1
+      },
+      "loss_enable": {
+        "type": "boolean",
+        "label": "停損出場",
+        "description": "",
+        "default": true
+      },
+      "forced_loss_enable": {
+        "type": "boolean",
+        "label": "強制停損出場",
+        "description": "",
+        "default": true
+      },
+      "max_loss_rate": {
+        "type": "number",
+        "label": "停損",
+        "description": "",
+        "default": -20,
+        "min": -100,
+        "step": 1
+      },
+      "forced_holding_days_enable": {
+        "type": "boolean",
+        "label": "強制天數出場",
+        "description": "",
+        "default": true
+      },
+      "max_holding_days": {
+        "type": "number",
+        "label": "最大持有天數",
+        "description": "",
+        "default": 20,
+        "min": 1,
+        "max": 30,
+        "step": 1
+      }
+    },
+    "is_confirmed": true,
+    "editor_mode": "traditional",
+    "jupyter_strategy_type": "analysis",
+    "created_at": "2025-07-12T21:01:26.375325",
+    "updated_at": "2025-07-12T21:19:04.855481",
+    "file_path": "data/strategies/dd8ff44d-af5c-4f13-ad0e-383e0a4f154b.py"
+  },
+  "db6e097c-12c0-458c-a9f2-aa90c042afda": {
+    "id": "db6e097c-12c0-458c-a9f2-aa90c042afda",
+    "name": "當沖-向量化",
+    "description": "依股票來源日期進場，當漲跌停出場，否則收盤出場",
+    "code": "# 向量化策略模板（推薦）\n# 使用 Polars 向量化操作，效能最佳\n# 適用於大量數據處理和簡單邏輯\n# \n# 可用的工具類別：\n# - PriceUtils: 價格計算工具，包含最小變動單位、漲跌停計算等\n# - Utils: 通用工具類別\n# - TradeRecord: 交易記錄資料類別\n# - generate_indicators: 生成技術指標\n\ndef calculate_entry_signals(stock_data, excel_pl_df, **kwargs):\n    \"\"\"\n    使用向量化操作計算進場信號\n    \n    Args:\n        stock_data: 股價資料 (polars DataFrame)\n        excel_pl_df: Excel股票列表 (polars DataFrame)\n        **kwargs: 策略參數\n        \n    Returns:\n        polars.DataFrame: 包含 should_entry 和 entry_reason 欄位的 DataFrame\n    \"\"\"\n    # 加入 row_index 以便追蹤\n    df = stock_data.with_columns([\n        pl.lit(0).alias(\"matched_stock_id\"),\n        pl.arange(0, stock_data.height).alias(\"row_index\")\n    ])\n\n    # 準備右側匹配來源（只保留 stock_id, date）\n    match_keys = excel_pl_df.select([\"stock_id\", \"date\"])\n    \n    # inner join 找出匹配的 row_index\n    matched = df.join(match_keys, on=[\"stock_id\", \"date\"], how=\"inner\")\n    matched_indices = matched.select(\"row_index\")[\"row_index\"].to_list()\n    \n    # 將 matched row_index 設為 1\n    df = df.with_columns([\n        pl.when(pl.col(\"row_index\").is_in(matched_indices))\n          .then(1)\n          .otherwise(0)\n          .alias(\"matched_stock_id\")\n    ])    \n    up_limit_rate = self.parameters['up_limit_rate']\n    down_limit_rate = self.parameters['down_limit_rate']\n    \n    # 範例：當日突破20日高點，則下一日進場\n    df = df.with_columns([\n        pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n        .then(1)\n        .otherwise(0)\n        .alias(\"should_entry\"),\n        \n        pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n        .then(pl.lit(\"當沖進場\"))\n        .otherwise(pl.lit(\"\"))\n        .alias(\"entry_reason\"),\n        \n        pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n        .then(pl.col(\"open\"))\n        .alias(\"entry_price\"),\n        \n        pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n        .then(pl.col(\"date\"))\n        .otherwise(0)\n        .alias(\"entry_date\"),\n        \n        # 下一列的 base_price = 本列的 close（前一列 matched=1 時）\n        pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n          .then(pl.col(\"close\").shift(1))   # 將當列 close 指定給下一列\n          .otherwise(0)\n          .alias(\"base_price\")\n    ])\n    df = df.with_columns([\n        pl.Series(\"up_limit_price\", [\n            PriceUtils.calculate_limit_price(p, up_limit_rate) if p is not None else None\n            for p in df[\"base_price\"]\n        ]),\n        pl.Series(\"down_limit_price\", [\n            PriceUtils.calculate_limit_price(p, down_limit_rate) if p is not None else None\n            for p in df[\"base_price\"]\n        ]),\n        pl.Series(\"shares\", [\n            PriceUtils.calculate_shares(self.parameters['initial_capital'], p, self.parameters['share_type']) if p is not None else None\n            for p in df[\"entry_price\"]\n        ])\n    ])\n    \n    return df\n\ndef calculate_exit_signals(stock_data, excel_pl_df, **kwargs):\n    \"\"\"\n    使用向量化操作計算出場信號\n    \n    Args:\n        stock_data: 股價資料 (polars DataFrame)\n        excel_pl_df: Excel股票列表 (polars DataFrame)\n        **kwargs: 策略參數\n        \n    Returns:\n        polars.DataFrame: 包含 should_exit 和 exit_reason 欄位的 DataFrame\n    \"\"\"            \n    # 範例：持有超過指定天數或虧損超過指定比例時出場\n    df = stock_data.with_columns([\n        pl.when(pl.col(\"should_entry\") == 1)\n        .then(1)\n        .otherwise(0)\n        .alias(\"should_exit\"),\n        \n        pl.when(pl.col(\"should_entry\") == 1)\n        .then(pl.col('date'))\n        .otherwise(pl.lit(\"\"))\n        .alias(\"exit_date\"),\n        \n        pl.when(pl.col(\"should_entry\") == 1)\n          .then(\n              pl.when(pl.col(\"high\") >= pl.col(\"up_limit_price\"))\n                .then(pl.col(\"up_limit_price\"))\n                .when(pl.col(\"low\") <= pl.col(\"down_limit_price\"))\n                .then(pl.col(\"down_limit_price\"))\n                .otherwise(pl.col(\"close\"))\n          )\n          .otherwise(None)\n          .alias(\"exit_price\"),\n        \n        pl.when(pl.col(\"should_entry\") == 1)\n        .then(pl.lit(\"當沖出場\"))\n        .otherwise(pl.lit(\"\"))\n        .alias(\"exit_reason\")\n    ])\n    \n    return df\n    \n# ===== 可選：自定義函數 =====\ndef process_parameters(parameters):\n    \"\"\"\n    處理策略參數\n    \n    Args:\n        parameters: 輸入參數\n        \n    Returns:\n        dict: 處理後的參數\n    \"\"\"\n    # 在這裡處理參數邏輯\n    return parameters\n\ndef validate_parameters(parameters):\n    \"\"\"\n    驗證策略參數\n    \n    Args:\n        parameters: 策略參數\n        \n    Raises:\n        ValueError: 當參數無效時\n    \"\"\"\n    # 在這裡驗證參數\n    pass\n\n# ===== 使用說明 =====\n# 1. 向量化模式特點：\n#    - 使用 Polars 向量化操作，效能最佳\n#    - 適用於大量數據處理和簡單邏輯\n#    - 可使用 generate_indicators() 生成技術指標\n#    - 支援複雜的條件組合\n#\n# 2. 必須實作的函數：\n#    - calculate_entry_signals: 計算進場信號\n#    - calculate_exit_signals: 計算出場信號\n#\n# 3. 可用的技術指標：\n#    - break_20_day_high: 突破20日新高\n#    - break_10_day_high: 突破10日新高\n#    - ma_5, ma_10, ma_20: 移動平均線\n#    - volume_ma_20: 成交量移動平均\n#    - 更多指標請參考 core/technical_indicators.py\n#\n# 4. 範例邏輯：\n#    - 突破策略：使用 break_20_day_high 等指標\n#    - 均線策略：使用 ma_5, ma_10, ma_20 等指標\n#    - 成交量策略：使用 volume_ma_20 等指標",
+    "parameters": {
+      "entry_type": {
+        "type": "select",
+        "label": "進場類型",
+        "description": "",
+        "options": [
+          {
+            "value": "open",
+            "label": "開盤價"
+          }
+        ],
+        "default": "open"
+      },
+      "exit_type": {
+        "type": "select",
+        "label": "出場類型",
+        "description": "",
+        "options": [
+          {
+            "value": "close",
+            "label": "收盤價"
+          }
+        ],
+        "default": "close"
+      },
+      "up_limit_rate": {
+        "type": "number",
+        "label": "漲停%",
+        "description": "",
+        "default": 9,
+        "max": 100,
+        "step": 1
+      },
+      "down_limit_rate": {
+        "type": "number",
+        "label": "跌停%",
+        "description": "",
+        "default": -9,
+        "min": -100,
+        "step": 1
+      },
+      "share_type": {
+        "type": "select",
+        "label": "計算股數",
+        "description": "",
+        "options": [
+          {
+            "value": "mixed",
+            "label": "整股+零股"
+          },
+          {
+            "value": "whole",
+            "label": "整股"
+          },
+          {
+            "value": "fractional",
+            "label": "零股"
+          }
+        ],
+        "default": "mixed"
+      }
+    },
+    "is_confirmed": true,
+    "editor_mode": "traditional",
+    "jupyter_strategy_type": "analysis",
+    "created_at": "2025-07-12T21:07:42.402037",
+    "updated_at": "2025-07-12T21:24:16.854397",
+    "file_path": "data/strategies/db6e097c-12c0-458c-a9f2-aa90c042afda.py"
+  },
+  "b6879970-6029-4e3e-a0ed-b813e253a522": {
+    "id": "b6879970-6029-4e3e-a0ed-b813e253a522",
+    "name": "當沖策略-Jupyter",
+    "description": "依股票來源日期進場，當漲跌停出場，否則收盤出場",
+    "code": "df = df.with_columns([\n    pl.lit(0).alias(\"matched_stock_id\"),\n    pl.arange(0, df.height).alias(\"row_index\")\n])\n\n# 準備右側匹配來源（只保留 stock_id, date）\nmatch_keys = stock_df.select([\"date\", \"stock_id\"])\n\n# inner join 找出匹配的 row_index\nmatched = df.join(match_keys, on=[\"stock_id\", \"date\"], how=\"inner\")\nmatched_indices = matched.select(\"row_index\")[\"row_index\"].to_list()\n\n# 將 matched row_index 設為 1\ndf = df.with_columns([\n    pl.when(pl.col(\"row_index\").is_in(matched_indices))\n    .then(1)\n    .otherwise(0)\n    .alias(\"matched_stock_id\")\n])  \n\nup_limit_rate = parameters['up_limit_rate']\ndown_limit_rate = parameters['down_limit_rate']\n\n# 範例：當日突破20日高點，則下一日進場\ndf = df.with_columns([\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(1)\n    .otherwise(0)\n    .alias(\"should_entry\"),\n\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(pl.lit(\"當沖進場\"))\n    .otherwise(pl.lit(\"\"))\n    .alias(\"entry_reason\"),\n\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(pl.col(\"open\"))\n    .alias(\"entry_price\"),\n\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(pl.col(\"date\"))\n    .otherwise(0)\n    .alias(\"entry_date\"),\n\n    # 下一列的 base_price = 本列的 close（前一列 matched=1 時）\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(pl.col(\"close\").shift(1))   # 將當列 close 指定給下一列\n    .otherwise(0)\n    .alias(\"base_price\")\n])\ndf = df.with_columns([\n    pl.Series(\"up_limit_price\", [\n        PriceUtils.calculate_limit_price(p, up_limit_rate) if p is not None else None\n        for p in df[\"base_price\"]\n    ]),\n    pl.Series(\"down_limit_price\", [\n        PriceUtils.calculate_limit_price(p, down_limit_rate) if p is not None else None\n        for p in df[\"base_price\"]\n    ]),\n    pl.Series(\"shares\", [\n        PriceUtils.calculate_shares(1000000, p, parameters['share_type']) if p is not None else None\n        for p in df[\"entry_price\"]\n    ])\n])\n\ndf = df.with_columns([\n        pl.when(pl.col(\"should_entry\") == 1)\n        .then(1)\n        .otherwise(0)\n        .alias(\"should_exit\"),\n        \n        pl.when(pl.col(\"should_entry\") == 1)\n        .then(pl.col('date'))\n        .otherwise(pl.lit(\"\"))\n        .alias(\"exit_date\"),\n        \n        pl.when(pl.col(\"should_entry\") == 1)\n          .then(\n              pl.when(pl.col(\"high\") >= pl.col(\"up_limit_price\"))\n                .then(pl.col(\"up_limit_price\"))\n                .when(pl.col(\"low\") <= pl.col(\"down_limit_price\"))\n                .then(pl.col(\"down_limit_price\"))\n                .otherwise(pl.col(\"close\"))\n          )\n          .otherwise(None)\n          .alias(\"exit_price\"),\n        \n        pl.when(pl.col(\"should_entry\") == 1)\n        .then(pl.lit(\"當沖出場\"))\n        .otherwise(pl.lit(\"\"))\n        .alias(\"exit_reason\")\n    ])\n\ndf = df.filter((pl.col(\"should_entry\") == 1) | (pl.col(\"should_exit\") == 1))",
+    "parameters": {
+      "entry_type": {
+        "type": "select",
+        "label": "進場類型",
+        "description": "",
+        "options": [
+          {
+            "value": "open",
+            "label": "開盤價"
+          }
+        ],
+        "default": "open"
+      },
+      "exit_type": {
+        "type": "select",
+        "label": "出場類型",
+        "description": "",
+        "options": [
+          {
+            "value": "close",
+            "label": "收盤價"
+          }
+        ],
+        "default": "close"
+      },
+      "up_limit_rate": {
+        "type": "number",
+        "label": "漲停%",
+        "description": "",
+        "default": 9,
+        "max": 100,
+        "step": 1
+      },
+      "down_limit_rate": {
+        "type": "number",
+        "label": "跌停%",
+        "description": "",
+        "default": -9,
+        "min": -100,
+        "step": 1
+      },
+      "share_type": {
+        "type": "select",
+        "label": "計算股數",
+        "description": "",
+        "options": [
+          {
+            "value": "mixed",
+            "label": "整股+零股"
+          },
+          {
+            "value": "whole",
+            "label": "整股"
+          },
+          {
+            "value": "fractional",
+            "label": "零股"
+          }
+        ],
+        "default": "mixed"
+      }
+    },
+    "is_confirmed": true,
+    "editor_mode": "jupyter",
+    "jupyter_strategy_type": "vectorized",
+    "created_at": "2025-07-12T21:45:18.527996",
+    "updated_at": "2025-07-15T09:47:04.536491",
+    "file_path": "data/strategies/b6879970-6029-4e3e-a0ed-b813e253a522.py"
+  },
+  "75aef77b-0c37-4650-b6f2-aebe5cd525d6": {
+    "id": "75aef77b-0c37-4650-b6f2-aebe5cd525d6",
+    "name": "詢圈公告",
+    "description": "",
+    "code": "# 狀態機策略模板\n# 使用逐行判斷，適用於複雜邏輯和跨列狀態追蹤\n# 支援複雜的進出場條件和狀態管理\n# \n# 可用的工具類別：\n# - PriceUtils: 價格計算工具，包含最小變動單位、漲跌停計算等\n# - Utils: 通用工具類別\n# - TradeRecord: 交易記錄資料類別\n# - generate_indicators: 生成技術指標\n\ndef should_entry(stock_data, current_index, excel_pl_df, **kwargs):\n    \"\"\"\n    判斷是否應該進場\n    \n    Args:\n        stock_data: 股價資料 (polars DataFrame)\n        current_index: 當前資料索引\n        excel_pl_df: Excel股票列表 (polars DataFrame)\n        **kwargs: 策略參數\n        \n    Returns:\n        tuple: (是否進場, 進場資訊)\n    \"\"\"\n    # 取得當前資料行\n    current_row = stock_data.row(current_index, named=True)\n    \n    # 範例：當收盤價大於開盤價時進場\n    if current_row[\"close\"] > current_row[\"open\"]:\n        return True, {\"reason\": \"收盤價大於開盤價\"}\n    \n    # 範例：檢查前幾天的資料（適用於複雜邏輯）\n    if current_index >= 5:\n        # 檢查前5天的收盤價是否都上漲\n        all_rising = True\n        for i in range(current_index - 4, current_index + 1):\n            prev_row = stock_data.row(i - 1, named=True)\n            curr_row = stock_data.row(i, named=True)\n            if curr_row[\"close\"] <= prev_row[\"close\"]:\n                all_rising = False\n                break\n        \n        if all_rising:\n            return True, {\"reason\": \"連續5天上漲\"}\n    \n    return False, {}\n\ndef should_exit(stock_data, current_index, position, excel_pl_df, **kwargs):\n    \"\"\"\n    判斷是否應該出場\n    \n    Args:\n        stock_data: 股價資料 (polars DataFrame)\n        current_index: 當前資料索引\n        position: 當前持倉資訊\n        excel_pl_df: Excel股票列表 (polars DataFrame)\n        **kwargs: 策略參數\n        \n    Returns:\n        tuple: (是否出場, 出場資訊)\n    \"\"\"\n    # 取得當前資料行\n    current_row = stock_data.row(current_index, named=True)\n    entry_index = position[\"entry_index\"]\n    entry_price = position[\"entry_price\"]\n    \n    # 計算持有天數\n    entry_row = stock_data.row(entry_index, named=True)\n    holding_days = (current_row[\"date\"] - entry_row[\"date\"]).days\n    \n    # 計算虧損率\n    loss_rate = ((current_row[\"close\"] - entry_price) / entry_price) * 100\n    \n    # 範例：持有超過指定天數或虧損超過指定比例時出場\n    max_holding_days = kwargs.get(\"max_holding_days\", 5)\n    max_loss_rate = kwargs.get(\"max_loss_rate\", 5.0)\n    \n    if holding_days >= max_holding_days:\n        return True, {\"reason\": f\"持有{holding_days}天\"}\n    \n    if loss_rate <= -max_loss_rate:\n        return True, {\"reason\": f\"虧損{loss_rate:.2f}%\"}\n    \n    # 範例：檢查連續下跌（適用於複雜邏輯）\n    if current_index >= 3:\n        # 檢查前3天是否連續下跌\n        all_falling = True\n        for i in range(current_index - 2, current_index + 1):\n            prev_row = stock_data.row(i - 1, named=True)\n            curr_row = stock_data.row(i, named=True)\n            if curr_row[\"close\"] >= prev_row[\"close\"]:\n                all_falling = False\n                break\n        \n        if all_falling:\n            return True, {\"reason\": \"連續3天下跌\"}\n    \n    return False, {}\n\n# ===== 策略參數配置範例 =====\n# 固定自定義參數\ncustom_parameters = {\n    \"max_holding_days\": {\n        \"type\": \"number\",\n        \"label\": \"最大持有天數\",\n        \"default\": 5,\n        \"min\": 1,\n        \"max\": 30,\n        \"step\": 1,\n        \"description\": \"最大持有天數\"\n    },\n    'record_holdings': {\n        'type': 'boolean', \n        'label': '完整記錄', \n        'description': '是否記錄未出場', \n        'default': True\n    }\n}\n\n# ===== 自定義函數 =====\ndef process_parameters(parameters):\n    \"\"\"\n    處理策略參數\n    \n    Args:\n        parameters: 輸入參數\n        \n    Returns:\n        dict: 處理後的參數\n    \"\"\"\n    # 在這裡處理參數邏輯\n    return parameters\n\ndef validate_parameters(parameters):\n    \"\"\"\n    驗證策略參數\n    \n    Args:\n        parameters: 策略參數\n        \n    Raises:\n        ValueError: 當參數無效時\n    \"\"\"\n    # 在這裡驗證參數\n    pass\n\n# ===== 使用說明 =====\n# 1. 狀態機模式特點：\n#    - 逐行判斷，適用於複雜邏輯和跨列狀態追蹤\n#    - 支援複雜的進出場條件和狀態管理\n#    - 可以檢查歷史資料和未來資料\n#    - 適合複雜的技術分析邏輯\n#\n# 2. 必須實作的函數：\n#    - should_entry: 判斷是否進場\n#    - should_exit: 判斷是否出場\n#\n# 3. 函數參數說明：\n#    - stock_data: 股價資料 DataFrame\n#    - current_index: 當前資料索引\n#    - position: 當前持倉資訊（僅 should_exit 函數）\n#    - excel_pl_df: Excel股票列表\n#    - **kwargs: 策略參數\n#\n# 4. 返回值格式：\n#    - should_entry: (bool, dict) - (是否進場, 進場資訊)\n#    - should_exit: (bool, dict) - (是否出場, 出場資訊)\n#\n# 5. 範例邏輯：\n#    - 連續上漲/下跌檢測\n#    - 複雜的技術指標組合\n#    - 基於歷史資料的條件判斷\n#    - 動態止損止盈\n#\n# 6. 策略參數配置範例:\n#    - custom_parameters: 要固定顯示在回測頁面的參數\n#    - 新增/刪除/修改參數: 新增/刪除/修改參數，會修改回測頁面\n",
+    "parameters": {
+      "max_holding_days": {
+        "type": "number",
+        "label": "最大持有天數",
+        "default": 5,
+        "min": 1,
+        "max": 30,
+        "step": 1,
+        "description": "最大持有天數"
+      },
+      "record_holdings": {
+        "type": "boolean",
+        "label": "完整記錄",
+        "description": "是否記錄未出場",
+        "default": true
+      }
+    },
+    "is_confirmed": false,
+    "editor_mode": "traditional",
+    "jupyter_strategy_type": "analysis",
+    "created_at": "2025-07-16T10:40:09.489304",
+    "updated_at": "2025-07-16T10:40:09.489304",
+    "file_path": "data/strategies/75aef77b-0c37-4650-b6f2-aebe5cd525d6.py"
+  }
+}

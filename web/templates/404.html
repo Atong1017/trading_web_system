@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}頁面未找到 - 台灣股票回測+自動下單系統{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mt-5">
+                <div class="error-page">
+                    <h1 class="display-1 text-muted">404</h1>
+                    <h2 class="mb-4">頁面未找到</h2>
+                    <p class="lead text-muted mb-4">
+                        抱歉，您要尋找的頁面不存在或已被移除。
+                    </p>
+                    <div class="mb-4">
+                        <a href="/" class="btn btn-primary me-2">
+                            <i class="fas fa-home"></i> 回到首頁
+                        </a>
+                        <a href="/backtest" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-chart-bar"></i> 策略回測
+                        </a>
+                        <a href="/auto-trading" class="btn btn-outline-success">
+                            <i class="fas fa-robot"></i> 自動下單
+                        </a>
+                    </div>
+                    <div class="text-muted">
+                        <small>
+                            如果您認為這是一個錯誤，請聯繫系統管理員。
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    padding: 2rem 0;
+}
+
+.error-page .display-1 {
+    font-size: 6rem;
+    font-weight: 300;
+    color: #6c757d;
+}
+
+.error-page h2 {
+    color: #495057;
+}
+
+.error-page .lead {
+    font-size: 1.25rem;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}首頁 - 台灣股票回測+自動下單系統{% endblock %}
+
+{% block feature_nav %}
+<div class="feature-nav">
+    <h4><i class="fas fa-compass"></i> 功能區導航</h4>
+    <!-- 首頁功能區 -->
+    <div class="feature-section">
+        <h5><i class="fas fa-home"></i> 首頁功能</h5>
+        <div class="feature-links">
+            <a href="/#overview" class="feature-link">系統概覽🔍</a>
+            <a href="/#quick-actions" class="feature-link">快速操作🔝</a>
+            <a href="/#strategies" class="feature-link">可用策略🧠</a>
+            <a href="/#system-status" class="feature-link">系統狀態🧪</a>
+            <a href="/#recent-trades" class="feature-link">最近交易💰</a>
+        </div>
+    </div>    
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">
+                <i class="fas fa-chart-line text-primary"></i> 
+                台灣股票回測+自動下單系統
+            </h1>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 系統概覽 -->
+    <div class="col-md-6" id="overview">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> 系統概覽</h5>
+            </div>
+            <div class="card-body">
+                <p>這是一個完整的台灣股票回測、自動下單、策略開發系統，提供以下功能：</p>
+                <ul>
+                    <li><strong>回測功能：</strong>自定義策略、歷史資料回測</li>
+                    <li><strong>自動下單：</strong>基於策略邏輯的即時自動交易</li>
+                    <li><strong>多種資料來源：</strong>API、快取、Excel檔案上傳</li>
+                    <li><strong>詳細分析：</strong>交易記錄、圖表分析、績效統計</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 快速操作 -->
+    <div class="col-md-6" id="quick-actions">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt"></i> 快速操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/backtest" class="btn btn-primary">
+                        <i class="fas fa-chart-bar"></i> 開始回測
+                    </a>
+                    <a href="/auto-trading" class="btn btn-success">
+                        <i class="fas fa-robot"></i> 自動下單
+                    </a>
+                    <a href="/trading-records" class="btn btn-info">
+                        <i class="fas fa-history"></i> 查看交易記錄
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- 策略列表 -->
+    <div class="col-md-6" id="strategies">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cogs"></i> 可用策略</h5>
+            </div>
+            <div class="card-body">
+                <div id="strategies-container">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                        <p>載入策略中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 系統狀態 -->
+    <div class="col-md-6" id="system-status">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-server"></i> 系統狀態</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-success" id="api-status">
+                                <i class="fas fa-check-circle"></i> 正常
+                            </h4>
+                            <small>API連接狀態</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-info" id="database-status">
+                                <i class="fas fa-database"></i> 正常
+                            </h4>
+                            <small>資料庫狀態</small>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-warning" id="auto-trading-status">
+                                <i class="fas fa-pause-circle"></i> 停止
+                            </h4>
+                            <small>自動下單狀態</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <h4 class="text-primary" id="active-strategies">
+                                <i class="fas fa-cogs"></i> 0
+                            </h4>
+                            <small>活躍策略</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- 最近交易記錄 -->
+    <div class="col-12" id="recent-trades">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-history"></i> 最近交易記錄</h5>
+                <a href="/trading-records" class="btn btn-sm btn-outline-primary">查看全部</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>股票代碼</th>
+                                <th>策略</th>
+                                <th>方向</th>
+                                <th>進場價</th>
+                                <th>出場價</th>
+                                <th>損益</th>
+                                <th>損益率</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-trades">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">
+                                    尚無交易記錄
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 載入中 -->
+<div class="loading">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">載入中...</span>
+    </div>
+    <p class="mt-2">載入中...</p>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 策略卡片樣式 */
+.strategy-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    height: 100%;
+}
+
+.strategy-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #007bff;
+}
+
+.strategy-card .card-body {
+    padding: 1rem;
+}
+
+.strategy-card h6 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.strategy-card small {
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+/* 載入動畫 */
+.fa-spinner {
+    color: #007bff;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // 載入策略列表
+    loadStrategies();
+    
+    // 載入最近交易記錄
+    loadRecentTrades();
+    
+    // 檢查系統狀態
+    checkSystemStatus();
+});
+
+// 載入策略列表
+function loadStrategies() {
+    fetch('/api/strategies/custom')
+        .then(response => {
+            console.log('API 回應物件:', response);
+            return response.json();
+        })
+        .then(data => {
+            console.log('API 回傳資料:', data);
+            if (data.status === 'success' && data.strategies) {
+                displayStrategies(data.strategies);
+            } else {
+                showNoStrategies();
+            }
+        })
+        .catch(error => {
+            console.error('載入策略列表失敗:', error);
+            showNoStrategies();
+        });
+}
+
+// 顯示策略列表
+function displayStrategies(strategies) {
+    var container = document.getElementById('strategies-container');
+    if (!container) return;
+    if (!strategies || strategies.length === 0) {
+        showNoStrategies();
+        return;
+    }
+    // 僅保留已確認的策略
+    var confirmed = strategies.filter(function(s) { return s.is_confirmed; });
+    if (confirmed.length === 0) {
+        showNoStrategies();
+        return;
+    }
+    var html = '<div class="row">';
+    confirmed.forEach(function(strategy) {
+        var icon = '<i class="fas fa-check-circle fa-2x text-success mb-2"></i>';
+        var label = `✅ ${strategy.name} <span style=\"font-size:0.9em;color:#aaa;\">(已確認)</span>`;
+        var desc = strategy.description ? `<small class="text-muted">${strategy.description}</small>` : '';
+        html += `
+            <div class="col-md-6 mb-3">
+                <div class="card strategy-card" style="cursor:pointer;" onclick="window.location.href='/backtest?strategy=custom_${strategy.id}'">
+                    <div class="card-body text-center">
+                        ${icon}
+                        <h6>${label}</h6>
+                        ${desc}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// 顯示無策略訊息
+function showNoStrategies() {
+    const container = $('#strategies-container');
+    container.html(`
+        <div class="text-center text-muted">
+            <i class="fas fa-info-circle fa-2x mb-2"></i>
+            <p>暫無可用策略</p>
+            <a href="/strategy-editor" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i> 建立策略
+            </a>
+        </div>
+    `);
+}
+
+// 顯示策略資訊
+function showStrategyInfo(strategyId, strategyName) {
+    // 跳轉到回測頁面並預設選擇該策略
+    window.location.href = `/backtest?strategy=custom_${strategyId}`;
+}
+
+// 載入最近交易記錄
+function loadRecentTrades() {
+    fetch('/api/trades/recent')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && data.trades.length > 0) {
+                displayRecentTrades(data.trades);
+            }
+        })
+        .catch(error => {
+            console.error('載入最近交易記錄失敗:', error);
+        });
+}
+
+// 顯示最近交易記錄
+function displayRecentTrades(trades) {
+    const tbody = $('#recent-trades');
+    tbody.empty();
+    
+    trades.forEach(trade => {
+        const row = `
+            <tr>
+                <td>${formatDate(trade.entry_date)}</td>
+                <td>${trade.stock_id}</td>
+                <td>${trade.strategy_name}</td>
+                <td>
+                    <span class="badge ${trade.trade_direction === 1 ? 'bg-success' : 'bg-danger'}">
+                        ${trade.trade_direction === 1 ? '做多' : '做空'}
+                    </span>
+                </td>
+                <td>${formatNumber(trade.entry_price)}</td>
+                <td>${formatNumber(trade.exit_price)}</td>
+                <td class="${trade.net_profit_loss >= 0 ? 'text-success' : 'text-danger'}">
+                    ${formatNumber(trade.net_profit_loss)}
+                </td>
+                <td class="${trade.profit_loss_rate >= 0 ? 'text-success' : 'text-danger'}">
+                    ${formatPercentage(trade.profit_loss_rate)}
+                </td>
+            </tr>
+        `;
+        tbody.append(row);
+    });
+}
+
+// 檢查系統狀態
+function checkSystemStatus() {
+    fetch('/api/system/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                updateSystemStatus(data.status_info);
+            }
+        })
+        .catch(error => {
+            console.error('檢查系統狀態失敗:', error);
+        });
+}
+
+// 更新系統狀態
+function updateSystemStatus(statusInfo) {
+    // 更新API狀態
+    if (statusInfo.api_status === 'normal') {
+        $('#api-status').html('<i class="fas fa-check-circle"></i> 正常');
+    } else {
+        $('#api-status').html('<i class="fas fa-times-circle"></i> 異常');
+    }
+    
+    // 更新資料庫狀態
+    if (statusInfo.database_status === 'normal') {
+        $('#database-status').html('<i class="fas fa-database"></i> 正常');
+    } else {
+        $('#database-status').html('<i class="fas fa-exclamation-triangle"></i> 異常');
+    }
+    
+    // 更新自動下單狀態
+    if (statusInfo.auto_trading_status === 'running') {
+        $('#auto-trading-status').html('<i class="fas fa-play-circle"></i> 執行中');
+    } else {
+        $('#auto-trading-status').html('<i class="fas fa-pause-circle"></i> 停止');
+    }
+    
+    // 更新活躍策略數量
+    $('#active-strategies').html(`<i class="fas fa-cogs"></i> ${statusInfo.active_strategies}`);
+}
+</script>
+{% endblock %} 

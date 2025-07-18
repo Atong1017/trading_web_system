@@ -1,0 +1,815 @@
+/* 自定義樣式 */
+
+/* 全域樣式 */
+body {
+    font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* 導航欄樣式 */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #007bff !important;
+}
+
+/* 卡片樣式 */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+    border: none;
+}
+
+.card-header h5 {
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+/* 按鈕樣式 */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #4a9a2a 0%, #97d4c0 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(86, 171, 47, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #e6395c 0%, #e64426 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 65, 108, 0.4);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #45a1e5 0%, #00d9e5 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+}
+
+/* 表單樣式 */
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* 表格樣式 */
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+    text-align: center;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(102, 126, 234, 0.05);
+}
+
+/* 統計卡片樣式 */
+.stat-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-title {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #495057;
+}
+
+/* 狀態指示器樣式 */
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.status-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.status-value {
+    font-weight: 600;
+}
+
+/* 徽章樣式 */
+.badge {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.5em 0.75em;
+}
+
+/* 進度條樣式 */
+.progress {
+    border-radius: 10px;
+    height: 8px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* 載入動畫 */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 警告訊息樣式 */
+.alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+/* 分頁樣式 */
+.pagination .page-link {
+    border-radius: 6px;
+    margin: 0 2px;
+    border: none;
+    color: #667eea;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    background-color: #667eea;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+/* 模態對話框樣式 */
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0;
+    border: none;
+}
+
+.modal-title {
+    font-weight: 600;
+}
+
+/* 檔案上傳區域樣式 */
+.file-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-area:hover {
+    border-color: #667eea;
+    background-color: rgba(102, 126, 234, 0.05);
+}
+
+.file-upload-area.dragover {
+    border-color: #667eea;
+    background-color: rgba(102, 126, 234, 0.1);
+}
+
+/* 圖表容器樣式 */
+.chart-container {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+#all-vertical-charts {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+#all-vertical-charts .vertical-chart-block {
+    margin-bottom: 0 !important;
+}
+#vertical-charts-toolbar > * {
+    margin-left: 8px;
+}
+#vertical-charts-toolbar > *:first-child {
+    margin-left: 0;
+}
+#all-vertical-charts .vertical-chart-block:last-child {
+    margin-bottom: 0;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .card-header h5 {
+        font-size: 1rem;
+    }
+    
+    .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+}
+
+/* 自定義滾動條 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+/* 工具提示樣式 */
+.tooltip-inner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.tooltip.bs-tooltip-top .arrow::before {
+    border-top-color: #667eea;
+}
+
+.tooltip.bs-tooltip-bottom .arrow::before {
+    border-bottom-color: #667eea;
+}
+
+.tooltip.bs-tooltip-left .arrow::before {
+    border-left-color: #667eea;
+}
+
+.tooltip.bs-tooltip-right .arrow::before {
+    border-right-color: #667eea;
+}
+
+/* 動畫效果 */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* 特殊效果 */
+.glow-effect {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+.pulse-effect {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+    }
+}
+
+/* 自定義勾選開關樣式 - 橫移綠色 */
+.custom-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+    background-color: #ccc;
+    border-radius: 15px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.custom-toggle-switch.active {
+    background-color: #28a745;
+}
+
+.custom-toggle-switch .toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 26px;
+    height: 26px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.custom-toggle-switch.active .toggle-slider {
+    transform: translateX(30px);
+}
+
+.custom-toggle-switch input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* 主題切換功能 */
+.theme-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.theme-switcher .btn {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.theme-switcher .btn:hover {
+    transform: scale(1.1);
+}
+
+/* 深色主題樣式 */
+body.dark-theme {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+body.dark-theme .card {
+    background-color: #2d2d2d;
+    border-color: #404040;
+}
+
+body.dark-theme .card-header {
+    background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+    color: #ffffff;
+}
+
+body.dark-theme .table {
+    background-color: #2d2d2d;
+    color: #ffffff;
+}
+
+body.dark-theme .table thead th {
+    background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+    color: #ffffff;
+    border-color: #404040;
+}
+
+body.dark-theme .table tbody tr {
+    background-color: #2d2d2d;
+    color: #ffffff;
+}
+
+body.dark-theme .table tbody tr:hover {
+    background-color: #404040;
+}
+
+body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #353535;
+}
+
+body.dark-theme .form-control {
+    background-color: #404040;
+    border-color: #555555;
+    color: #ffffff;
+}
+
+body.dark-theme .form-control:focus {
+    background-color: #404040;
+    border-color: #667eea;
+    color: #ffffff;
+}
+
+body.dark-theme .form-select {
+    background-color: #404040;
+    border-color: #555555;
+    color: #ffffff;
+}
+
+body.dark-theme .form-select:focus {
+    background-color: #404040;
+    border-color: #667eea;
+    color: #ffffff;
+}
+
+body.dark-theme .btn-outline-primary {
+    color: #667eea;
+    border-color: #667eea;
+}
+
+body.dark-theme .btn-outline-primary:hover {
+    background-color: #667eea;
+    color: #ffffff;
+}
+
+body.dark-theme .navbar {
+    background-color: #2d2d2d !important;
+}
+
+body.dark-theme .sidebar {
+    background-color: #2d2d2d !important;
+}
+
+body.dark-theme .nav-link {
+    color: #ffffff !important;
+}
+
+body.dark-theme .nav-link:hover {
+    color: #667eea !important;
+}
+
+body.dark-theme .modal-content {
+    background-color: #2d2d2d;
+    color: #ffffff;
+}
+
+body.dark-theme .modal-header {
+    background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+    color: #ffffff;
+    border-bottom-color: #404040;
+}
+
+body.dark-theme .modal-footer {
+    border-top-color: #404040;
+}
+
+body.dark-theme .alert {
+    background-color: #404040;
+    border-color: #555555;
+    color: #ffffff;
+}
+
+body.dark-theme .text-muted {
+    color: #aaaaaa !important;
+}
+
+body.dark-theme .border {
+    border-color: #404040 !important;
+}
+
+body.dark-theme .border-bottom {
+    border-bottom-color: #404040 !important;
+}
+
+body.dark-theme .border-top {
+    border-top-color: #404040 !important;
+}
+
+body.dark-theme .border-left {
+    border-left-color: #404040 !important;
+}
+
+body.dark-theme .border-right {
+    border-right-color: #404040 !important;
+}
+
+/* 主題切換按鈕（側邊欄） */
+.theme-switcher-btn {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    transition: all 0.3s;
+    padding: 0;
+}
+.theme-switcher-btn:hover {
+    background: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+/* 編輯器主題同步（強化） */
+.editor-sidebar, .editor-sidebar .card, .editor-sidebar .list-group, .editor-sidebar .list-group-item {
+    background: #fff !important;
+    color: #222 !important;
+    border-color: #e0e0e0 !important;
+}
+body.dark-theme .editor-sidebar, body.dark-theme .editor-sidebar .card, body.dark-theme .editor-sidebar .list-group, body.dark-theme .editor-sidebar .list-group-item {
+    background: #23272b !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+.editor-code-area, .editor-code-area .card, .editor-code-area .form-control, .editor-code-area pre, .editor-code-area textarea {
+    background: #fff !important;
+    color: #222 !important;
+    border-color: #e0e0e0 !important;
+}
+body.dark-theme .editor-code-area, body.dark-theme .editor-code-area .card, body.dark-theme .editor-code-area .form-control, body.dark-theme .editor-code-area pre, body.dark-theme .editor-code-area textarea {
+    background: #23272b !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+
+/* 編輯器選單選項高亮 */
+.editor-sidebar .active, .editor-sidebar .selected {
+    background: #e9ecef;
+    color: #007bff;
+}
+body.dark-theme .editor-sidebar .active, body.dark-theme .editor-sidebar .selected {
+    background: #343a40;
+    color: #67b7ff;
+}
+
+/* 編輯器程式碼區塊 */
+.editor-code-area {
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+    font-size: 1rem;
+    min-height: 300px;
+}
+body.dark-theme .editor-code-area {
+    border-color: #444;
+}
+
+/* 回測參數區塊 - 強化grid效果 */
+.backtest-params-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px 24px !important;
+}
+.backtest-params-grid .param-item {
+    margin-bottom: 0.5rem !important;
+}
+.backtest-params-grid label.form-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+.backtest-params-grid .form-text {
+    font-size: 0.85rem;
+    color: #888;
+}
+@media (max-width: 600px) {
+    .backtest-params-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* 黑色主題下表格條紋字體顏色強制覆蓋 */
+body.dark-theme .table-striped tbody tr,
+body.dark-theme .table-striped tbody tr td,
+body.dark-theme .table-striped tbody tr th {
+    color: #fff !important;
+}
+/* 深色主題下保持漲跌顏色 */
+body.dark-theme .table-striped tbody tr td.text-success,
+body.dark-theme .table-striped tbody tr td .text-success {
+    color: #4be37a !important;
+}
+body.dark-theme .table-striped tbody tr td.text-danger,
+body.dark-theme .table-striped tbody tr td .text-danger {
+    color: #ff6b6b !important;
+}
+body.dark-theme .table-striped tbody tr {
+    background-color: #2d2d2d !important;
+}
+body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #353535 !important;
+}
+body.dark-theme .table-striped tbody tr:hover {
+    background-color: #404040 !important;
+}
+
+/* 編輯器工具列主題同步（強化權重） */
+body.dark-theme .editor-toolbar {
+    background: #23272b !important;
+    color: #eee !important;
+    border-bottom: 1px solid #444 !important;
+}
+body.dark-theme .editor-toolbar .btn,
+body.dark-theme .editor-toolbar .btn-outline-secondary {
+    background: #343a40 !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+body.dark-theme .editor-toolbar .btn:hover {
+    background: #495057 !important;
+    color: #fff !important;
+}
+
+/* 移除會覆蓋dark-theme的設定 */
+/* .editor-toolbar {
+    background: transparent;
+    border-bottom: none;
+} */ 
+
+body.dark-theme .jupyter-toolbar,
+body.dark-theme .jupyter-cell,
+body.dark-theme .jupyter-cell-header,
+body.dark-theme .jupyter-cell-input,
+body.dark-theme .jupyter-cell-output {
+    background-color: #23272b !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+body.dark-theme .jupyter-cell-output .output-item {
+    background-color: #23272b !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+body.dark-theme .jupyter-cell-header {
+    border-bottom: 1px solid #444 !important;
+}
+body.dark-theme .jupyter-cell-output .output-stream.stdout {
+    color: #e6e6e6 !important;
+}
+body.dark-theme .jupyter-cell-output .output-stream.stderr,
+body.dark-theme .jupyter-cell-output .output-error {
+    color: #ff6f6f !important;
+}
+body.dark-theme .jupyter-cell-output .output-display table th,
+body.dark-theme .jupyter-cell-output .output-display table td {
+    background-color: #23272b !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+body.dark-theme .jupyter-cell-output .output-display table th {
+    background-color: #2d333b !important;
+} 
+
+/* 全面移除所有背景、邊框、顏色強制覆蓋，讓 dark-theme/dark-mode 樣式能生效 */
+body.dark-theme *, body.dark-theme * {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: inherit !important;
+  border-color: inherit !important;
+} 

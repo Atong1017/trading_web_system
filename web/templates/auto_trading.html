@@ -1,0 +1,615 @@
+{% extends "base.html" %}
+
+{% block title %}自動下單系統{% endblock %}
+
+{% block feature_nav %}
+<div class="feature-nav">
+    <h4><i class="fas fa-compass"></i> 功能區導航</h4>
+    <!-- 自動下單功能區 -->
+    <div class="feature-section">
+        <h5><i class="fas fa-robot"></i> 自動下單功能</h5>
+        <div class="feature-links">
+            <a href="/auto-trading#system-status" class="feature-link">系統狀態⏳</a>
+            <a href="/auto-trading#strategy-settings" class="feature-link">策略設定🛠️</a>
+            <a href="/auto-trading#real-time-trades" class="feature-link">即時交易💰</a>
+            <a href="/auto-trading#performance" class="feature-link">績效統計🎯</a>
+        </div>
+    </div>    
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-robot"></i> 自動下單系統
+            </h2>
+        </div>
+    </div>
+
+    <!-- 系統狀態 -->
+    <div class="row mb-4" id="system-status">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> 系統狀態</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="status-item">
+                                <span class="status-label">自動下單狀態:</span>
+                                <span id="auto-trading-status" class="status-value badge badge-secondary">停止</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="status-item">
+                                <span class="status-label">API狀態:</span>
+                                <span id="api-status" class="status-value badge badge-success">正常</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="status-item">
+                                <span class="status-label">資料庫狀態:</span>
+                                <span id="database-status" class="status-value badge badge-success">正常</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="status-item">
+                                <span class="status-label">活躍策略:</span>
+                                <span id="active-strategies" class="status-value badge badge-info">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 策略設定 -->
+    <div class="row mb-4" id="strategy-settings">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-cog"></i> 策略設定</h5>
+                </div>
+                <div class="card-body">
+                    <form id="auto-trading-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="strategy-select">選擇策略</label>
+                                    <select class="form-control" id="strategy-select" required>
+                                        <option value="">請選擇策略</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="broker-select">選擇券商</label>
+                                    <select class="form-control" id="broker-select" required>
+                                        <option value="">請選擇券商</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="initial-capital">初始資金</label>
+                                    <input type="number" class="form-control" id="initial-capital" 
+                                           placeholder="請輸入初始資金" min="1000" step="1000" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="max-positions">最大持倉數</label>
+                                    <input type="number" class="form-control" id="max-positions" 
+                                           placeholder="最大同時持倉數量" min="1" max="10" value="5">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 策略參數區域 -->
+                        <div id="strategy-parameters" class="mt-3">
+                            <!-- 動態載入策略參數 -->
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success" id="start-btn">
+                                    <i class="fas fa-play"></i> 啟動自動下單
+                                </button>
+                                <button type="button" class="btn btn-danger" id="stop-btn" disabled>
+                                    <i class="fas fa-stop"></i> 停止自動下單
+                                </button>
+                                <button type="button" class="btn btn-info" id="refresh-status-btn">
+                                    <i class="fas fa-sync-alt"></i> 重新整理狀態
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 即時交易記錄 -->
+    <div class="row mb-4" id="real-time-trades">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> 即時交易記錄</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="trading-table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>時間</th>
+                                    <th>股票代碼</th>
+                                    <th>股票名稱</th>
+                                    <th>方向</th>
+                                    <th>價格</th>
+                                    <th>股數</th>
+                                    <th>報酬</th>
+                                    <th>狀態</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trading-tbody">
+                                <!-- 動態載入交易記錄 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 績效統計 -->
+    <div class="row mb-4" id="performance">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> 績效統計</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-title">總交易次數</div>
+                                <div class="stat-value" id="total-trades">0</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-title">勝率</div>
+                                <div class="stat-value" id="win-rate">0%</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-title">總報酬</div>
+                                <div class="stat-value" id="total-return">0%</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card">
+                                <div class="stat-title">最大回撤</div>
+                                <div class="stat-value" id="max-drawdown">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 確認對話框 -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認操作</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirm-btn">確認</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    let autoTradingStatus = 'stopped';
+    let currentStrategy = null;
+    let currentBroker = null;
+    
+    // 初始化頁面
+    initializePage();
+    
+    // 載入策略列表
+    loadStrategies();
+    
+    // 載入券商列表
+    loadBrokers();
+    
+    // 重新整理系統狀態
+    refreshSystemStatus();
+    
+    // 設定定時器，每30秒重新整理一次狀態
+    setInterval(refreshSystemStatus, 30000);
+    
+    // 策略選擇變更事件
+    $('#strategy-select').change(function() {
+        const strategy = $(this).val();
+        if (strategy) {
+            loadStrategyParameters(strategy);
+        } else {
+            $('#strategy-parameters').empty();
+        }
+    });
+    
+    // 啟動自動下單
+    $('#auto-trading-form').submit(function(e) {
+        e.preventDefault();
+        startAutoTrading();
+    });
+    
+    // 停止自動下單
+    $('#stop-btn').click(function() {
+        showConfirmDialog('確定要停止自動下單嗎？', function() {
+            stopAutoTrading();
+        });
+    });
+    
+    // 重新整理狀態
+    $('#refresh-status-btn').click(function() {
+        refreshSystemStatus();
+        loadRecentTrades();
+    });
+    
+    function initializePage() {
+        // 初始化頁面設定
+        console.log('自動下單頁面初始化完成');
+    }
+    
+    function loadStrategies() {
+        $.get('/api/strategies')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    const select = $('#strategy-select');
+                    select.empty().append('<option value="">請選擇策略</option>');
+                    
+                    if (response.strategies && response.strategies.length > 0) {
+                        // 分離已確認和未確認的策略
+                        const confirmedStrategies = [];
+                        const unconfirmedStrategies = [];
+                        
+                        response.strategies.forEach(function(strategy) {
+                            if (strategy.is_confirmed) {
+                                confirmedStrategies.push(strategy);
+                            } else {
+                                unconfirmedStrategies.push(strategy);
+                            }
+                        });
+                        
+                        // 先添加已確認的策略（顯示在上方）
+                        if (confirmedStrategies.length > 0) {
+                            // 添加已確認策略的分隔標題
+                            select.append('<option disabled>--- 已確認策略 ---</option>');
+                            
+                            confirmedStrategies.forEach(function(strategy) {
+                                const strategyValue = `custom_${strategy.id}`;
+                                select.append(`<option value="${strategyValue}">✅ ${strategy.name}</option>`);
+                            });
+                        }
+                        
+                        // 再添加未確認的策略
+                        if (unconfirmedStrategies.length > 0) {
+                            // 添加未確認策略的分隔標題
+                            select.append('<option disabled>--- 編輯中策略 ---</option>');
+                            
+                            unconfirmedStrategies.forEach(function(strategy) {
+                                const strategyValue = `custom_${strategy.id}`;
+                                select.append(`<option value="${strategyValue}">📝 ${strategy.name}</option>`);
+                            });
+                        }
+                    } else {
+                        select.append('<option value="" disabled>暫無自定義策略</option>');
+                    }
+                }
+            })
+            .fail(function(xhr) {
+                showError('載入策略列表失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function loadBrokers() {
+        $.get('/api/brokers')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    const select = $('#broker-select');
+                    select.empty().append('<option value="">請選擇券商</option>');
+                    
+                    response.brokers.forEach(function(broker) {
+                        select.append(`<option value="${broker.code}">${broker.name}</option>`);
+                    });
+                }
+            })
+            .fail(function(xhr) {
+                showError('載入券商列表失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function loadStrategyParameters(strategyName) {
+        // 檢查是否為自定義策略
+        if (strategyName.startsWith('custom_')) {
+            const strategyId = strategyName.replace('custom_', '');
+            $.get(`/api/strategies/custom/${strategyId}`)
+                .done(function(response) {
+                    if (response.status === 'success') {
+                        const strategy = response.strategy;
+                        if (strategy.parameters && Object.keys(strategy.parameters).length > 0) {
+                            renderStrategyParameters(strategy.parameters);
+                        } else {
+                            $('#strategy-parameters').html('<p class="text-muted">此自定義策略無需額外參數</p>');
+                        }
+                    }
+                })
+                .fail(function(xhr) {
+                    showError('載入自定義策略參數失敗: ' + xhr.responseText);
+                });
+        } else {
+            // 使用通用策略參數API
+            $.get(`/api/strategy/parameters?strategy_type=${strategyName}`)
+                .done(function(response) {
+                    if (response.status === 'success') {
+                        renderStrategyParameters(response.strategy_parameters);
+                    }
+                })
+                .fail(function(xhr) {
+                    showError('載入策略參數失敗: ' + xhr.responseText);
+                });
+        }
+    }
+    
+    function renderStrategyParameters(parameters) {
+        const container = $('#strategy-parameters');
+        container.empty();
+        
+        if (Object.keys(parameters).length === 0) {
+            container.append('<p class="text-muted">此策略無需額外參數</p>');
+            return;
+        }
+        
+        const row = $('<div class="row"></div>');
+        
+        Object.keys(parameters).forEach(function(key) {
+            const param = parameters[key];
+            const col = $('<div class="col-md-6"></div>');
+            const formGroup = $('<div class="form-group"></div>');
+            
+            const label = $(`<label for="param-${key}">${param.label || key}</label>`);
+            let input;
+            
+            if (param.type === 'number') {
+                input = $(`<input type="number" class="form-control" id="param-${key}" 
+                              value="${param.default || ''}" 
+                              min="${param.min || ''}" 
+                              max="${param.max || ''}" 
+                              step="${param.step || '1'}">`);
+            } else if (param.type === 'select') {
+                input = $('<select class="form-control"></select>');
+                param.options.forEach(function(option) {
+                    input.append(`<option value="${option.value}" ${option.value === param.default ? 'selected' : ''}>${option.label}</option>`);
+                });
+            } else {
+                input = $(`<input type="text" class="form-control" id="param-${key}" value="${param.default || ''}">`);
+            }
+            
+            if (param.required) {
+                input.attr('required', true);
+            }
+            
+            formGroup.append(label).append(input);
+            col.append(formGroup);
+            row.append(col);
+        });
+        
+        container.append(row);
+    }
+    
+    function startAutoTrading() {
+        const formData = new FormData();
+        formData.append('strategy', $('#strategy-select').val());
+        formData.append('broker', $('#broker-select').val());
+        formData.append('capital', $('#initial-capital').val());
+        
+        // 收集策略參數
+        const parameters = {};
+        $('#strategy-parameters input, #strategy-parameters select').each(function() {
+            const id = $(this).attr('id');
+            if (id && id.startsWith('param-')) {
+                const key = id.replace('param-', '');
+                parameters[key] = $(this).val();
+            }
+        });
+        formData.append('parameters', JSON.stringify(parameters));
+        
+        $.ajax({
+            url: '/api/auto-trading/start',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false
+        })
+        .done(function(response) {
+            if (response.status === 'success') {
+                showSuccess('自動下單已啟動');
+                updateAutoTradingStatus('running');
+                $('#start-btn').prop('disabled', true);
+                $('#stop-btn').prop('disabled', false);
+            }
+        })
+        .fail(function(xhr) {
+            showError('啟動自動下單失敗: ' + xhr.responseText);
+        });
+    }
+    
+    function stopAutoTrading() {
+        $.post('/api/auto-trading/stop')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    showSuccess('自動下單已停止');
+                    updateAutoTradingStatus('stopped');
+                    $('#start-btn').prop('disabled', false);
+                    $('#stop-btn').prop('disabled', true);
+                }
+            })
+            .fail(function(xhr) {
+                showError('停止自動下單失敗: ' + xhr.responseText);
+            });
+    }
+    
+    function refreshSystemStatus() {
+        $.get('/api/system/status')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    const status = response.status_info;
+                    updateSystemStatus(status);
+                }
+            })
+            .fail(function(xhr) {
+                console.error('取得系統狀態失敗:', xhr.responseText);
+            });
+    }
+    
+    function updateSystemStatus(status) {
+        $('#api-status').text(status.api_status === 'normal' ? '正常' : '異常')
+                       .removeClass('badge-success badge-danger')
+                       .addClass(status.api_status === 'normal' ? 'badge-success' : 'badge-danger');
+        
+        $('#database-status').text(status.database_status === 'normal' ? '正常' : '異常')
+                            .removeClass('badge-success badge-danger')
+                            .addClass(status.database_status === 'normal' ? 'badge-success' : 'badge-danger');
+        
+        $('#active-strategies').text(status.active_strategies);
+        
+        updateAutoTradingStatus(status.auto_trading_status);
+    }
+    
+    function updateAutoTradingStatus(status) {
+        autoTradingStatus = status;
+        const statusElement = $('#auto-trading-status');
+        
+        if (status === 'running') {
+            statusElement.text('執行中').removeClass('badge-secondary badge-danger').addClass('badge-success');
+            $('#start-btn').prop('disabled', true);
+            $('#stop-btn').prop('disabled', false);
+        } else {
+            statusElement.text('停止').removeClass('badge-success badge-danger').addClass('badge-secondary');
+            $('#start-btn').prop('disabled', false);
+            $('#stop-btn').prop('disabled', true);
+        }
+    }
+    
+    function loadRecentTrades() {
+        $.get('/api/trades/recent?limit=20')
+            .done(function(response) {
+                if (response.status === 'success') {
+                    renderTradingTable(response.trades);
+                }
+            })
+            .fail(function(xhr) {
+                console.error('載入交易記錄失敗:', xhr.responseText);
+            });
+    }
+    
+    function renderTradingTable(trades) {
+        const tbody = $('#trading-tbody');
+        tbody.empty();
+        
+        if (trades.length === 0) {
+            tbody.append('<tr><td colspan="8" class="text-center text-muted">尚無交易記錄</td></tr>');
+            return;
+        }
+        
+        trades.forEach(function(trade) {
+            const row = $('<tr></tr>');
+            row.append(`<td>${formatDateTime(trade.entry_date)}</td>`);
+            row.append(`<td>${trade.stock_id}</td>`);
+            row.append(`<td>${trade.stock_name || '-'}</td>`);
+            row.append(`<td><span class="badge ${trade.trade_direction === 'buy' ? 'badge-success' : 'badge-danger'}">${trade.trade_direction === 'buy' ? '買入' : '賣出'}</span></td>`);
+            row.append(`<td>${formatPrice(trade.entry_price)}</td>`);
+            row.append(`<td>${trade.shares.toLocaleString()}</td>`);
+            row.append(`<td class="${trade.net_profit_loss >= 0 ? 'text-success' : 'text-danger'}">${formatProfitLoss(trade.net_profit_loss)}</td>`);
+            row.append(`<td><span class="badge badge-info">${trade.status || '執行中'}</span></td>`);
+            tbody.append(row);
+        });
+    }
+    
+    function formatDateTime(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleString('zh-TW');
+    }
+    
+    function formatPrice(price) {
+        return price ? price.toFixed(2) : '-';
+    }
+    
+    function formatProfitLoss(amount) {
+        if (amount === null || amount === undefined) return '-';
+        const sign = amount >= 0 ? '+' : '';
+        return `${sign}${amount.toFixed(0)}`;
+    }
+    
+    function showConfirmDialog(message, callback) {
+        $('#confirm-message').text(message);
+        $('#confirm-btn').off('click').on('click', function() {
+            $('#confirmModal').modal('hide');
+            callback();
+        });
+        $('#confirmModal').modal('show');
+    }
+    
+    function showSuccess(message) {
+        showAlert('success', message);
+    }
+    
+    function showError(message) {
+        showAlert('danger', message);
+    }
+    
+    function showAlert(type, message) {
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        `;
+        $('.container-fluid').prepend(alertHtml);
+        
+        // 自動移除警告
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+    }
+});
+</script>
+{% endblock %} 

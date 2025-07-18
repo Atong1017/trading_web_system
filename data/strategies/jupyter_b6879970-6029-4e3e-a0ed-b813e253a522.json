@@ -1,0 +1,46 @@
+{
+  "strategy_id": "b6879970-6029-4e3e-a0ed-b813e253a522",
+  "cells": [
+    {
+      "id": "cell_1",
+      "code": "df = df.with_columns([\n    pl.lit(0).alias(\"matched_stock_id\"),\n    pl.arange(0, df.height).alias(\"row_index\")\n])\n\n# 準備右側匹配來源（只保留 stock_id, date）\nmatch_keys = stock_df.select([\"date\", \"stock_id\"])\n\n# inner join 找出匹配的 row_index\nmatched = df.join(match_keys, on=[\"stock_id\", \"date\"], how=\"inner\")\nmatched_indices = matched.select(\"row_index\")[\"row_index\"].to_list()\n\n# 將 matched row_index 設為 1\ndf = df.with_columns([\n    pl.when(pl.col(\"row_index\").is_in(matched_indices))\n    .then(1)\n    .otherwise(0)\n    .alias(\"matched_stock_id\")\n])  ",
+      "outputs": "",
+      "metadata": {
+        "cell_type": "code",
+        "execution_count": 1
+      }
+    },
+    {
+      "id": "cell_2",
+      "code": "up_limit_rate = parameters['up_limit_rate']\ndown_limit_rate = parameters['down_limit_rate']\n\n# 範例：當日突破20日高點，則下一日進場\ndf = df.with_columns([\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(1)\n    .otherwise(0)\n    .alias(\"should_entry\"),\n\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(pl.lit(\"當沖進場\"))\n    .otherwise(pl.lit(\"\"))\n    .alias(\"entry_reason\"),\n\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(pl.col(\"open\"))\n    .alias(\"entry_price\"),\n\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(pl.col(\"date\"))\n    .otherwise(0)\n    .alias(\"entry_date\"),\n\n    # 下一列的 base_price = 本列的 close（前一列 matched=1 時）\n    pl.when(pl.col(\"matched_stock_id\").shift(1) == 1)\n    .then(pl.col(\"close\").shift(1))   # 將當列 close 指定給下一列\n    .otherwise(0)\n    .alias(\"base_price\")\n])\ndf = df.with_columns([\n    pl.Series(\"up_limit_price\", [\n        PriceUtils.calculate_limit_price(p, up_limit_rate) if p is not None else None\n        for p in df[\"base_price\"]\n    ]),\n    pl.Series(\"down_limit_price\", [\n        PriceUtils.calculate_limit_price(p, down_limit_rate) if p is not None else None\n        for p in df[\"base_price\"]\n    ]),\n    pl.Series(\"shares\", [\n        PriceUtils.calculate_shares(1000000, p, parameters['share_type']) if p is not None else None\n        for p in df[\"entry_price\"]\n    ])\n])",
+      "outputs": "",
+      "metadata": {
+        "cell_type": "code",
+        "execution_count": 1
+      }
+    },
+    {
+      "id": "cell_3",
+      "code": "df = df.with_columns([\n        pl.when(pl.col(\"should_entry\") == 1)\n        .then(1)\n        .otherwise(0)\n        .alias(\"should_exit\"),\n        \n        pl.when(pl.col(\"should_entry\") == 1)\n        .then(pl.col('date'))\n        .otherwise(pl.lit(\"\"))\n        .alias(\"exit_date\"),\n        \n        pl.when(pl.col(\"should_entry\") == 1)\n          .then(\n              pl.when(pl.col(\"high\") >= pl.col(\"up_limit_price\"))\n                .then(pl.col(\"up_limit_price\"))\n                .when(pl.col(\"low\") <= pl.col(\"down_limit_price\"))\n                .then(pl.col(\"down_limit_price\"))\n                .otherwise(pl.col(\"close\"))\n          )\n          .otherwise(None)\n          .alias(\"exit_price\"),\n        \n        pl.when(pl.col(\"should_entry\") == 1)\n        .then(pl.lit(\"當沖出場\"))\n        .otherwise(pl.lit(\"\"))\n        .alias(\"exit_reason\")\n    ])",
+      "outputs": "",
+      "metadata": {
+        "cell_type": "code",
+        "execution_count": 1
+      }
+    },
+    {
+      "id": "cell_4",
+      "code": "df = df.filter((pl.col(\"should_entry\") == 1) | (pl.col(\"should_exit\") == 1))",
+      "outputs": "",
+      "metadata": {
+        "cell_type": "code",
+        "execution_count": 1
+      }
+    }
+  ],
+  "metadata": {
+    "created": "2025-07-15T09:47:04.531013",
+    "total_cells": 4,
+    "version": "1.0"
+  }
+}

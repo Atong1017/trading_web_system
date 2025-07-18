@@ -1,0 +1,869 @@
+{% extends "base.html" %}
+
+{% block title %}選股編輯器{% endblock %}
+
+{% block feature_nav %}
+<div class="feature-nav">
+    <h4><i class="fas fa-compass"></i> 功能區導航</h4>
+    <!-- 選股編輯器功能區 -->
+    <div class="feature-section">
+        <h5><i class="fas fa-filter"></i> 選股編輯器功能</h5>
+        <div class="feature-links">
+            <a href="/stock-selector#stock-lists" class="feature-link">選股列表🔍</a>
+            <a href="/stock-selector#stock-editor" class="feature-link">編輯器🧠</a>
+            <a href="/stock-selector#conditions" class="feature-link">選股條件📐</a>
+            <a href="/stock-selector#export" class="feature-link">匯出功能💾</a>
+        </div>
+    </div>    
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- 左側：選股列表 -->
+        <div class="col-md-4" id="stock-lists">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i> 選股列表
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="createNewStockList()">
+                            <i class="fas fa-plus"></i> 新增
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="refreshStockLists()">
+                            <i class="fas fa-sync-alt"></i> 重新整理
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="stockLists" class="list-group">
+                        <!-- 選股列表將動態載入 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：選股編輯器 -->
+        <div class="col-md-8" id="stock-editor">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit"></i> 選股編輯器
+                    </h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-success" onclick="exportToStrategy()">
+                            <i class="fas fa-arrow-right"></i> 匯出到策略
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="exportToExcel()">
+                            <i class="fas fa-download"></i> 匯出Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="stockEditor">
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-mouse-pointer fa-3x mb-3"></i>
+                            <p>請從左側選擇一個選股列表或建立新的選股列表</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增選股列表對話框 -->
+<div class="modal fade" id="newStockListModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新增選股列表</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="stockListName" class="form-label">選股列表名稱</label>
+                    <input type="text" class="form-control" id="stockListName" placeholder="請輸入選股列表名稱">
+                </div>
+                <div class="mb-3">
+                    <label for="stockListDescription" class="form-label">描述</label>
+                    <textarea class="form-control" id="stockListDescription" rows="3" placeholder="請輸入描述"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="confirmCreateStockList()">建立</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 選股條件編輯器對話框 -->
+<div class="modal fade" id="stockConditionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">選股條件編輯器</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>選股條件</h6>
+                        <div id="conditionBuilder">
+                            <!-- 條件建構器將動態生成 -->
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary mt-2" onclick="addCondition()">
+                            <i class="fas fa-plus"></i> 新增條件
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>預覽結果</h6>
+                        <div id="conditionPreview" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            <p class="text-muted">條件設定後將顯示預覽</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="applyConditions()">套用條件</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 匯出到策略對話框 -->
+<div class="modal fade" id="exportToStrategyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">匯出到策略編輯器</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">選擇目標策略</label>
+                    <select class="form-control" id="targetStrategy">
+                        <option value="">請選擇策略...</option>
+                    </select>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    匯出後將自動跳轉到策略編輯器頁面
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="confirmExportToStrategy()">匯出</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentStockListId = null;
+let stockLists = [];
+let currentStockData = [];
+let conditionCounter = 0;
+
+// 頁面載入時初始化
+document.addEventListener('DOMContentLoaded', function() {
+    loadStockLists();
+});
+
+// 載入選股列表
+async function loadStockLists() {
+    try {
+        const response = await fetch('/api/stock-lists');
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            stockLists = data.stock_lists;
+            displayStockLists();
+        }
+    } catch (error) {
+        console.error('載入選股列表失敗:', error);
+        showAlert('載入選股列表失敗', 'danger');
+    }
+}
+
+// 顯示選股列表
+function displayStockLists() {
+    const container = document.getElementById('stockLists');
+    container.innerHTML = '';
+    
+    if (stockLists.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center py-3">尚無選股列表</p>';
+        return;
+    }
+    
+    stockLists.forEach(stockList => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item list-group-item-action';
+        item.onclick = () => selectStockList(stockList.id);
+        
+        item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">${stockList.name}</h6>
+                    <p class="mb-1 text-muted small">${stockList.description || '無描述'}</p>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar"></i> ${new Date(stockList.created_at).toLocaleDateString()}
+                        <span class="ms-2">
+                            <i class="fas fa-chart-line"></i> ${stockList.stock_count || 0} 檔股票
+                        </span>
+                    </small>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="editStockList('${stockList.id}')">
+                            <i class="fas fa-edit"></i> 編輯
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="duplicateStockList('${stockList.id}')">
+                            <i class="fas fa-copy"></i> 複製
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteStockList('${stockList.id}')">
+                            <i class="fas fa-trash"></i> 刪除
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(item);
+    });
+}
+
+// 選擇選股列表
+async function selectStockList(stockListId) {
+    try {
+        const response = await fetch(`/api/stock-lists/${stockListId}`);
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            currentStockListId = stockListId;
+            currentStockData = data.stock_list.stocks || [];
+            displayStockEditor(data.stock_list);
+            
+            // 更新選中狀態
+            document.querySelectorAll('#stockLists .list-group-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.list-group-item').classList.add('active');
+        }
+    } catch (error) {
+        console.error('載入選股列表失敗:', error);
+        showAlert('載入選股列表失敗', 'danger');
+    }
+}
+
+// 顯示選股編輯器
+function displayStockEditor(stockList) {
+    const editor = document.getElementById('stockEditor');
+    
+    editor.innerHTML = `
+        <div class="mb-3">
+            <div class="row">
+                <div class="col-md-8">
+                    <input type="text" class="form-control" id="stockListName" value="${stockList.name}" placeholder="選股列表名稱">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-primary" onclick="saveStockList()">
+                        <i class="fas fa-save"></i> 儲存
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <textarea class="form-control" id="stockListDescription" rows="2" placeholder="描述">${stockList.description || ''}</textarea>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-cogs"></i> 選股條件
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="stockConditions">
+                            ${generateConditionsDisplay(stockList.conditions || [])}
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" onclick="openConditionEditor()">
+                            <i class="fas fa-plus"></i> 新增條件
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-list"></i> 股票列表 (${currentStockData.length})
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="addManualStock()">
+                                <i class="fas fa-plus"></i> 手動新增
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" onclick="importFromExcel()">
+                                <i class="fas fa-upload"></i> 匯入Excel
+                            </button>
+                        </div>
+                        <div id="stockListDisplay" class="border rounded p-2" style="max-height: 300px; overflow-y: auto;">
+                            ${generateStockListDisplay()}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 生成條件顯示
+function generateConditionsDisplay(conditions) {
+    if (!conditions || conditions.length === 0) {
+        return '<p class="text-muted">尚無選股條件</p>';
+    }
+    
+    return conditions.map(condition => `
+        <div class="border rounded p-2 mb-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>${condition.field}</strong> ${condition.operator} ${condition.value}
+                </div>
+                <button class="btn btn-sm btn-outline-danger" onclick="removeCondition('${condition.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 生成股票列表顯示
+function generateStockListDisplay() {
+    if (currentStockData.length === 0) {
+        return '<p class="text-muted">尚無股票</p>';
+    }
+    
+    return currentStockData.map(stock => `
+        <div class="d-flex justify-content-between align-items-center border-bottom py-1">
+            <div>
+                <strong>${stock.stock_id}</strong>
+                <small class="text-muted">${stock.stock_name || ''}</small>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="removeStock('${stock.stock_id}')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+// 新增選股列表
+function createNewStockList() {
+    const modal = new bootstrap.Modal(document.getElementById('newStockListModal'));
+    modal.show();
+}
+
+// 確認建立選股列表
+async function confirmCreateStockList() {
+    const name = document.getElementById('stockListName').value.trim();
+    const description = document.getElementById('stockListDescription').value.trim();
+    
+    if (!name) {
+        showAlert('請輸入選股列表名稱', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/stock-lists', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                description: description
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            bootstrap.Modal.getInstance(document.getElementById('newStockListModal')).hide();
+            showAlert('選股列表建立成功', 'success');
+            loadStockLists();
+        } else {
+            showAlert(data.message || '建立失敗', 'danger');
+        }
+    } catch (error) {
+        console.error('建立選股列表失敗:', error);
+        showAlert('建立選股列表失敗', 'danger');
+    }
+}
+
+// 儲存選股列表
+async function saveStockList() {
+    if (!currentStockListId) {
+        showAlert('請先選擇或建立選股列表', 'warning');
+        return;
+    }
+    
+    const name = document.getElementById('stockListName').value.trim();
+    const description = document.getElementById('stockListDescription').value.trim();
+    
+    if (!name) {
+        showAlert('請輸入選股列表名稱', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/stock-lists/${currentStockListId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                description: description,
+                stocks: currentStockData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            showAlert('儲存成功', 'success');
+            loadStockLists();
+        } else {
+            showAlert(data.message || '儲存失敗', 'danger');
+        }
+    } catch (error) {
+        console.error('儲存選股列表失敗:', error);
+        showAlert('儲存選股列表失敗', 'danger');
+    }
+}
+
+// 開啟條件編輯器
+function openConditionEditor() {
+    const modal = new bootstrap.Modal(document.getElementById('stockConditionModal'));
+    modal.show();
+    loadConditionBuilder();
+}
+
+// 載入條件建構器
+function loadConditionBuilder() {
+    const container = document.getElementById('conditionBuilder');
+    container.innerHTML = `
+        <div class="mb-3">
+            <label class="form-label">選股欄位</label>
+            <select class="form-control" id="conditionField">
+                <option value="stock_id">股票代碼</option>
+                <option value="stock_name">股票名稱</option>
+                <option value="sector">產業分類</option>
+                <option value="market_cap">市值</option>
+                <option value="price">股價</option>
+                <option value="volume">成交量</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">條件運算符</label>
+            <select class="form-control" id="conditionOperator">
+                <option value="equals">等於</option>
+                <option value="contains">包含</option>
+                <option value="greater_than">大於</option>
+                <option value="less_than">小於</option>
+                <option value="between">介於</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">條件值</label>
+            <input type="text" class="form-control" id="conditionValue" placeholder="請輸入條件值">
+        </div>
+    `;
+}
+
+// 新增條件
+function addCondition() {
+    conditionCounter++;
+    const container = document.getElementById('conditionBuilder');
+    
+    const conditionDiv = document.createElement('div');
+    conditionDiv.className = 'border rounded p-3 mb-3';
+    conditionDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6>條件 ${conditionCounter}</h6>
+            <button class="btn btn-sm btn-outline-danger" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <select class="form-control" id="field_${conditionCounter}">
+                    <option value="stock_id">股票代碼</option>
+                    <option value="stock_name">股票名稱</option>
+                    <option value="sector">產業分類</option>
+                    <option value="market_cap">市值</option>
+                    <option value="price">股價</option>
+                    <option value="volume">成交量</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-control" id="operator_${conditionCounter}">
+                    <option value="equals">等於</option>
+                    <option value="contains">包含</option>
+                    <option value="greater_than">大於</option>
+                    <option value="less_than">小於</option>
+                    <option value="between">介於</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <input type="text" class="form-control" id="value_${conditionCounter}" placeholder="條件值">
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(conditionDiv);
+}
+
+// 套用條件
+async function applyConditions() {
+    try {
+        // 收集條件
+        const conditions = [];
+        const conditionDivs = document.querySelectorAll('#conditionBuilder .border.rounded');
+        
+        conditionDivs.forEach((div, index) => {
+            const field = div.querySelector('select').value;
+            const operator = div.querySelectorAll('select')[1].value;
+            const value = div.querySelector('input').value;
+            
+            if (value.trim()) {
+                conditions.push({
+                    id: `condition_${index}`,
+                    field: field,
+                    operator: operator,
+                    value: value
+                });
+            }
+        });
+        
+        // 套用條件到股票列表
+        const response = await fetch('/api/stock-lists/apply-conditions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                conditions: conditions
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            currentStockData = data.stocks;
+            bootstrap.Modal.getInstance(document.getElementById('stockConditionModal')).hide();
+            showAlert(`條件套用成功，找到 ${currentStockData.length} 檔股票`, 'success');
+            
+            // 更新顯示
+            const stockListDisplay = document.getElementById('stockListDisplay');
+            if (stockListDisplay) {
+                stockListDisplay.innerHTML = generateStockListDisplay();
+            }
+        } else {
+            showAlert(data.message || '套用條件失敗', 'danger');
+        }
+    } catch (error) {
+        console.error('套用條件失敗:', error);
+        showAlert('套用條件失敗', 'danger');
+    }
+}
+
+// 手動新增股票
+function addManualStock() {
+    const stockId = prompt('請輸入股票代碼:');
+    if (stockId && stockId.trim()) {
+        const stock = {
+            stock_id: stockId.trim(),
+            stock_name: '',
+            start_date: '',
+            end_date: ''
+        };
+        
+        currentStockData.push(stock);
+        
+        const stockListDisplay = document.getElementById('stockListDisplay');
+        if (stockListDisplay) {
+            stockListDisplay.innerHTML = generateStockListDisplay();
+        }
+        
+        showAlert('股票新增成功', 'success');
+    }
+}
+
+// 移除股票
+function removeStock(stockId) {
+    currentStockData = currentStockData.filter(stock => stock.stock_id !== stockId);
+    
+    const stockListDisplay = document.getElementById('stockListDisplay');
+    if (stockListDisplay) {
+        stockListDisplay.innerHTML = generateStockListDisplay();
+    }
+    
+    showAlert('股票移除成功', 'success');
+}
+
+// 匯入Excel
+function importFromExcel() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xlsx,.xls';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            uploadExcelFile(file);
+        }
+    };
+    input.click();
+}
+
+// 上傳Excel檔案
+async function uploadExcelFile(file) {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch('/api/stock-lists/import-excel', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            currentStockData = data.stocks;
+            
+            const stockListDisplay = document.getElementById('stockListDisplay');
+            if (stockListDisplay) {
+                stockListDisplay.innerHTML = generateStockListDisplay();
+            }
+            
+            showAlert(`成功匯入 ${currentStockData.length} 檔股票`, 'success');
+        } else {
+            showAlert(data.message || '匯入失敗', 'danger');
+        }
+    } catch (error) {
+        console.error('匯入Excel失敗:', error);
+        showAlert('匯入Excel失敗', 'danger');
+    }
+}
+
+// 匯出到策略
+function exportToStrategy() {
+    if (!currentStockListId || currentStockData.length === 0) {
+        showAlert('請先選擇選股列表並確保有股票資料', 'warning');
+        return;
+    }
+    
+    // 載入策略列表
+    loadStrategyList();
+    
+    const modal = new bootstrap.Modal(document.getElementById('exportToStrategyModal'));
+    modal.show();
+}
+
+// 載入策略列表
+async function loadStrategyList() {
+    try {
+        const response = await fetch('/api/strategies/custom');
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            const select = document.getElementById('targetStrategy');
+            select.innerHTML = '<option value="">請選擇策略...</option>';
+            
+            data.strategies.forEach(strategy => {
+                const option = document.createElement('option');
+                option.value = strategy.id;
+                option.textContent = strategy.name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('載入策略列表失敗:', error);
+    }
+}
+
+// 確認匯出到策略
+async function confirmExportToStrategy() {
+    const strategyId = document.getElementById('targetStrategy').value;
+    
+    if (!strategyId) {
+        showAlert('請選擇目標策略', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/stock-lists/export-to-strategy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                stock_list_id: currentStockListId,
+                strategy_id: strategyId,
+                stocks: currentStockData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            bootstrap.Modal.getInstance(document.getElementById('exportToStrategyModal')).hide();
+            showAlert('匯出成功', 'success');
+            
+            // 跳轉到策略編輯器
+            setTimeout(() => {
+                window.location.href = `/strategy-editor?strategy_id=${strategyId}`;
+            }, 1000);
+        } else {
+            showAlert(data.message || '匯出失敗', 'danger');
+        }
+    } catch (error) {
+        console.error('匯出到策略失敗:', error);
+        showAlert('匯出到策略失敗', 'danger');
+    }
+}
+
+// 匯出Excel
+function exportToExcel() {
+    if (!currentStockData || currentStockData.length === 0) {
+        showAlert('沒有股票資料可匯出', 'warning');
+        return;
+    }
+    
+    // 建立Excel內容
+    const excelData = currentStockData.map(stock => ({
+        stock_id: stock.stock_id,
+        stock_name: stock.stock_name || '',
+        start_date: stock.start_date || '',
+        end_date: stock.end_date || ''
+    }));
+    
+    // 下載Excel檔案
+    downloadExcel(excelData, 'stock_list');
+}
+
+// 下載Excel檔案
+function downloadExcel(data, filename) {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "股票列表");
+    
+    XLSX.writeFile(workbook, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// 編輯選股列表
+function editStockList(stockListId) {
+    selectStockList(stockListId);
+}
+
+// 複製選股列表
+async function duplicateStockList(stockListId) {
+    try {
+        const response = await fetch(`/api/stock-lists/${stockListId}/duplicate`, {
+            method: 'POST'
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            showAlert('複製成功', 'success');
+            loadStockLists();
+        } else {
+            showAlert(data.message || '複製失敗', 'danger');
+        }
+    } catch (error) {
+        console.error('複製選股列表失敗:', error);
+        showAlert('複製選股列表失敗', 'danger');
+    }
+}
+
+// 刪除選股列表
+async function deleteStockList(stockListId) {
+    if (!confirm('確定要刪除此選股列表嗎？')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/stock-lists/${stockListId}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            showAlert('刪除成功', 'success');
+            loadStockLists();
+            
+            if (currentStockListId === stockListId) {
+                currentStockListId = null;
+                currentStockData = [];
+                document.getElementById('stockEditor').innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-mouse-pointer fa-3x mb-3"></i>
+                        <p>請從左側選擇一個選股列表或建立新的選股列表</p>
+                    </div>
+                `;
+            }
+        } else {
+            showAlert(data.message || '刪除失敗', 'danger');
+        }
+    } catch (error) {
+        console.error('刪除選股列表失敗:', error);
+        showAlert('刪除選股列表失敗', 'danger');
+    }
+}
+
+// 重新整理選股列表
+function refreshStockLists() {
+    loadStockLists();
+}
+
+// 顯示提示訊息
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
+    }, 5000);
+}
+</script>
+
+<!-- 引入 XLSX 函式庫 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+{% endblock %} 

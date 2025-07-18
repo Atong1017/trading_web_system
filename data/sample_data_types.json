@@ -1,0 +1,190 @@
+{
+  "daily_price": {
+    "id": "daily_price",
+    "name": "每日股價",
+    "description": "股票每日開盤、收盤、最高、最低價等基本資訊",
+    "category": "股價資料",
+    "parameters": {
+      "stock_id": {
+        "type": "text",
+        "label": "股票代碼",
+        "default": "2330",
+        "placeholder": "請輸入股票代碼"
+      },
+      "start_date": {
+        "type": "date",
+        "label": "開始日期",
+        "default": "2025-06-02"
+      },
+      "end_date": {
+        "type": "date",
+        "label": "結束日期",
+        "default": "2025-07-02"
+      }
+    }
+  },
+  "minute_price": {
+    "id": "minute_price",
+    "name": "分K股價",
+    "description": "股票分K線圖資料，包含開盤、收盤、最高、最低價",
+    "category": "股價資料",
+    "parameters": {
+      "stock_id": {
+        "type": "text",
+        "label": "股票代碼",
+        "default": "2330",
+        "placeholder": "請輸入股票代碼"
+      },
+      "interval": {
+        "type": "select",
+        "label": "時間間隔",
+        "default": "1",
+        "options": [
+          {
+            "value": "1",
+            "label": "1分鐘"
+          },
+          {
+            "value": "5",
+            "label": "5分鐘"
+          },
+          {
+            "value": "15",
+            "label": "15分鐘"
+          },
+          {
+            "value": "30",
+            "label": "30分鐘"
+          },
+          {
+            "value": "60",
+            "label": "1小時"
+          }
+        ]
+      },
+      "date": {
+        "type": "date",
+        "label": "日期",
+        "default": "2025-07-02"
+      }
+    }
+  },
+  "dividend": {
+    "id": "dividend",
+    "name": "除權息資料",
+    "description": "股票除權息相關資訊，包含除權息日期、金額等",
+    "category": "財務資料",
+    "parameters": {
+      "stock_id": {
+        "type": "text",
+        "label": "股票代碼",
+        "default": "2330",
+        "placeholder": "請輸入股票代碼"
+      },
+      "start_date": {
+        "type": "date",
+        "label": "開始日期",
+        "default": "2024-07-02"
+      },
+      "end_date": {
+        "type": "date",
+        "label": "結束日期",
+        "default": "2025-07-02"
+      }
+    }
+  },
+  "daily_price_with_dividend": {
+    "id": "daily_price_with_dividend",
+    "name": "每日股價合併除權息",
+    "description": "每日股價資料並包含除權息調整資訊",
+    "category": "股價資料",
+    "parameters": {
+      "stock_id": {
+        "type": "text",
+        "label": "股票代碼",
+        "default": "2330",
+        "placeholder": "請輸入股票代碼"
+      },
+      "start_date": {
+        "type": "date",
+        "label": "開始日期",
+        "default": "2025-06-02"
+      },
+      "end_date": {
+        "type": "date",
+        "label": "結束日期",
+        "default": "2025-07-02"
+      },
+      "adjust_type": {
+        "type": "select",
+        "label": "調整類型",
+        "default": "all",
+        "options": [
+          {
+            "value": "all",
+            "label": "全部調整"
+          },
+          {
+            "value": "dividend",
+            "label": "僅除權息"
+          },
+          {
+            "value": "none",
+            "label": "不調整"
+          }
+        ]
+      }
+    }
+  },
+  "technical_indicators": {
+    "id": "technical_indicators",
+    "name": "技術指標",
+    "description": "包含各種技術指標的股價資料",
+    "category": "技術分析",
+    "parameters": {
+      "stock_id": {
+        "type": "text",
+        "label": "股票代碼",
+        "default": "2330",
+        "placeholder": "請輸入股票代碼"
+      },
+      "start_date": {
+        "type": "date",
+        "label": "開始日期",
+        "default": "2025-05-03"
+      },
+      "end_date": {
+        "type": "date",
+        "label": "結束日期",
+        "default": "2025-07-02"
+      },
+      "indicators": {
+        "type": "select",
+        "label": "技術指標",
+        "default": "all",
+        "options": [
+          {
+            "value": "all",
+            "label": "全部指標"
+          },
+          {
+            "value": "ma",
+            "label": "移動平均線"
+          },
+          {
+            "value": "rsi",
+            "label": "RSI"
+          },
+          {
+            "value": "macd",
+            "label": "MACD"
+          },
+          {
+            "value": "bollinger",
+            "label": "布林通道"
+          }
+        ]
+      }
+    }
+  }
+}
