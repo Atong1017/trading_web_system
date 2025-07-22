@@ -246,7 +246,3 @@ pip install -r requirements.txt --force-reinstall
 - 支援基本回測功能
 - 支援Excel檔案上傳
 - 支援多執行緒處理
-
----
-
-**注意**: 本系統僅供學習和研究使用，實際交易請謹慎評估風險。 
