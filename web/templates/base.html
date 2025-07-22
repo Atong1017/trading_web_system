@@ -398,6 +398,166 @@
         body.dark-theme .feature-link:hover {
             background: rgba(255,255,255,0.25);
         }
+        
+        /* 設定按鈕樣式 */
+        .settings-btn {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* 設定模態框樣式 */
+        #settingsModal .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+        }
+        
+        #settingsModal .nav-tabs .nav-link.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+            background-color: transparent;
+        }
+        
+        #settingsModal .nav-tabs .nav-link:hover {
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+        
+        #settingsModal .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        #settingsModal .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.75rem 1rem;
+        }
+        
+        #settingsModal .card-header h6 {
+            margin: 0;
+            color: #495057;
+            font-weight: 600;
+        }
+        
+        /* 字體大小設定 */
+        .font-small {
+            font-size: 0.875rem;
+        }
+        
+        .font-small .card-title,
+        .font-small h1,
+        .font-small h2,
+        .font-small h3,
+        .font-small h4,
+        .font-small h5,
+        .font-small h6 {
+            font-size: 0.875rem;
+        }
+        
+        .font-medium {
+            font-size: 1rem;
+        }
+        
+        .font-large {
+            font-size: 1.125rem;
+        }
+        
+        .font-large .card-title,
+        .font-large h1,
+        .font-large h2,
+        .font-large h3,
+        .font-large h4,
+        .font-large h5,
+        .font-large h6 {
+            font-size: 1.125rem;
+        }
+        
+        /* 側邊欄收合功能 */
+        .sidebar.collapsed {
+            width: 60px;
+        }
+        
+        .sidebar.collapsed .nav-link span,
+        .sidebar.collapsed h4,
+        .sidebar.collapsed .feature-nav {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-link {
+            text-align: center;
+            padding: 0.5rem;
+        }
+        
+        .sidebar.collapsed .nav-link i {
+            font-size: 1.2rem;
+        }
+        
+        .main-content.expanded {
+            margin-left: 60px;
+            width: calc(100vw - 60px);
+        }
+        
+        /* 深色主題下的設定模態框 */
+        body.dark-theme #settingsModal .nav-tabs .nav-link {
+            color: #adb5bd;
+        }
+        
+        body.dark-theme #settingsModal .nav-tabs .nav-link.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        body.dark-theme #settingsModal .nav-tabs .nav-link:hover {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        body.dark-theme #settingsModal .card {
+            background-color: #2d2d2d;
+            border-color: #404040;
+        }
+        
+        body.dark-theme #settingsModal .card-header {
+            background-color: #404040;
+            border-bottom-color: #555555;
+        }
+        
+        body.dark-theme #settingsModal .card-header h6 {
+            color: #ffffff;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .sidebar.collapsed {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content.expanded {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            #settingsModal .modal-dialog {
+                margin: 0.5rem;
+                max-width: calc(100% - 1rem);
+            }
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -407,8 +567,8 @@
         <div class="position-sticky pt-3">
             <div class="text-center mb-4 d-flex align-items-center justify-content-center" style="gap: 10px;">
                 <h4 class="mb-0"><i class="fas fa-chart-line text-primary"></i> 交易系統</h4>
-                <button class="btn btn-outline-primary theme-switcher-btn" id="themeToggle" title="切換主題" style="margin-left:10px;">
-                    <i class="fas fa-moon" id="themeIcon"></i>
+                <button class="btn btn-outline-primary settings-btn" id="settingsBtn" title="設定" style="margin-left:10px;">
+                    <i class="fas fa-user" id="settingsIcon"></i>
                 </button>
             </div>
             <ul class="nav flex-column">
@@ -463,6 +623,362 @@
         {% block content %}{% endblock %}
     </main>
     
+    <!-- 設定模態框 -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">
+                        <i class="fas fa-cog"></i> 系統設定
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 未登入狀態 -->
+                    <div id="loginSection" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-sign-in-alt"></i> 登入系統</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="loginForm">
+                                    <div class="mb-3">
+                                        <label for="loginUsername" class="form-label">使用者名稱</label>
+                                        <input type="text" class="form-control" id="loginUsername" placeholder="請輸入使用者名稱" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="loginPassword" class="form-label">密碼</label>
+                                        <input type="password" class="form-control" id="loginPassword" placeholder="請輸入密碼" required>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="rememberMe">
+                                        <label class="form-check-label" for="rememberMe">記住我</label>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt"></i> 登入
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" id="showRegister">
+                                            <i class="fas fa-user-plus"></i> 註冊新帳號
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 註冊狀態 -->
+                    <div id="registerSection" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-user-plus"></i> 註冊新帳號</h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="registerForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="registerUsername" class="form-label">使用者名稱</label>
+                                                <input type="text" class="form-control" id="registerUsername" placeholder="請輸入使用者名稱" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="registerEmail" class="form-label">電子郵件</label>
+                                                <input type="email" class="form-control" id="registerEmail" placeholder="請輸入電子郵件" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="registerPassword" class="form-label">密碼</label>
+                                                <input type="password" class="form-control" id="registerPassword" placeholder="請輸入密碼" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="confirmPassword" class="form-label">確認密碼</label>
+                                                <input type="password" class="form-control" id="confirmPassword" placeholder="請再次輸入密碼" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-user-plus"></i> 註冊
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" id="showLogin">
+                                            <i class="fas fa-arrow-left"></i> 返回登入
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 已登入狀態 -->
+                    <div id="userSection" style="display: none;">
+                        <!-- 設定導航標籤 -->
+                        <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">
+                                    <i class="fas fa-user"></i> 會員資料
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="interface-tab" data-bs-toggle="tab" data-bs-target="#interface" type="button" role="tab">
+                                    <i class="fas fa-palette"></i> 介面設定
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
+                                    <i class="fas fa-server"></i> 系統設定
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <!-- 設定內容 -->
+                        <div class="tab-content mt-3" id="settingsTabContent">
+                            <!-- 會員資料 -->
+                            <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-user"></i> 會員資料</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="profileForm">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="username" class="form-label">使用者名稱</label>
+                                                        <input type="text" class="form-control" id="username" readonly>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="email" class="form-label">電子郵件</label>
+                                                        <input type="email" class="form-control" id="email" placeholder="請輸入電子郵件">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="displayName" class="form-label">顯示名稱</label>
+                                                        <input type="text" class="form-control" id="displayName" placeholder="請輸入顯示名稱">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="phone" class="form-label">電話號碼</label>
+                                                        <input type="tel" class="form-control" id="phone" placeholder="請輸入電話號碼">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="bio" class="form-label">個人簡介</label>
+                                                <textarea class="form-control" id="bio" rows="3" placeholder="請輸入個人簡介"></textarea>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="memberSince" class="form-label">會員註冊日期</label>
+                                                        <input type="text" class="form-control" id="memberSince" readonly>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="lastLogin" class="form-label">最後登入</label>
+                                                        <input type="text" class="form-control" id="lastLogin" readonly>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-save"></i> 儲存會員資料
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 介面設定 -->
+                            <div class="tab-pane fade" id="interface" role="tabpanel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-palette"></i> 介面設定</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <form id="interfaceForm">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="theme" class="form-label">主題選擇</label>
+                                                        <select class="form-select" id="theme">
+                                                            <option value="light">淺色主題</option>
+                                                            <option value="dark">深色主題</option>
+                                                            <option value="auto">自動切換</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="language" class="form-label">語言設定</label>
+                                                        <select class="form-select" id="language">
+                                                            <option value="zh-TW" selected>繁體中文</option>
+                                                            <option value="en-US">English</option>
+                                                            <option value="ja-JP">日本語</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="fontSize" class="form-label">字體大小</label>
+                                                        <select class="form-select" id="fontSize">
+                                                            <option value="small">小</option>
+                                                            <option value="medium" selected>中</option>
+                                                            <option value="large">大</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="sidebarCollapsed" class="form-label">側邊欄設定</label>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" id="sidebarCollapsed">
+                                                            <label class="form-check-label" for="sidebarCollapsed">
+                                                                預設收起側邊欄
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="chartTheme" class="form-label">圖表主題</label>
+                                                        <select class="form-select" id="chartTheme">
+                                                            <option value="default">預設主題</option>
+                                                            <option value="dark">深色主題</option>
+                                                            <option value="light">淺色主題</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label for="timezone" class="form-label">時區設定</label>
+                                                        <select class="form-select" id="timezone">
+                                                            <option value="Asia/Taipei" selected>台北 (GMT+8)</option>
+                                                            <option value="UTC">UTC</option>
+                                                            <option value="America/New_York">紐約 (GMT-5)</option>
+                                                            <option value="Europe/London">倫敦 (GMT+0)</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">通知設定</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                                    <label class="form-check-label" for="emailNotifications">
+                                                        電子郵件通知
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="browserNotifications" checked>
+                                                    <label class="form-check-label" for="browserNotifications">
+                                                        瀏覽器通知
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="tradeNotifications" checked>
+                                                    <label class="form-check-label" for="tradeNotifications">
+                                                        交易通知
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-save"></i> 儲存介面設定
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" id="resetInterface">
+                                                    <i class="fas fa-undo"></i> 重置為預設
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 系統設定 -->
+                            <div class="tab-pane fade" id="system" role="tabpanel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-server"></i> 系統設定</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">快速連結</label>
+                                                    <div class="d-grid gap-2">
+                                                        <a href="/settings" class="btn btn-outline-primary">
+                                                            <i class="fas fa-cogs"></i> 完整系統設定
+                                                        </a>
+                                                        <a href="/cache-manager" class="btn btn-outline-info">
+                                                            <i class="fas fa-database"></i> 快取管理
+                                                        </a>
+                                                        <a href="/strategy-editor" class="btn btn-outline-success">
+                                                            <i class="fas fa-code"></i> 策略編輯器
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">系統資訊</label>
+                                                    <div class="list-group list-group-flush">
+                                                        <div class="list-group-item d-flex justify-content-between">
+                                                            <span>系統版本</span>
+                                                            <span class="badge bg-primary">v2.0.0</span>
+                                                        </div>
+                                                        <div class="list-group-item d-flex justify-content-between">
+                                                            <span>API狀態</span>
+                                                            <span class="badge bg-success">正常</span>
+                                                        </div>
+                                                        <div class="list-group-item d-flex justify-content-between">
+                                                            <span>資料庫狀態</span>
+                                                            <span class="badge bg-success">正常</span>
+                                                        </div>
+                                                        <div class="list-group-item d-flex justify-content-between">
+                                                            <span>自動下單</span>
+                                                            <span class="badge bg-warning">停止</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                            <button type="button" class="btn btn-danger" id="logoutBtn">
+                                                <i class="fas fa-sign-out-alt"></i> 登出
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
@@ -474,6 +990,7 @@
         // 全域變數
         let currentStrategy = null;
         let currentParameters = {};
+        let isLoggedIn = false; // 登入狀態
         
         // 顯示載入中
         function showLoading() {
@@ -643,13 +1160,542 @@
             const currentTheme = localStorage.getItem('theme') || 'light';
             applyTheme(currentTheme);
             
-            // 主題切換按鈕點擊事件
-            $('#themeToggle').click(function() {
-                const currentTheme = $('body').hasClass('dark-theme') ? 'light' : 'dark';
-                applyTheme(currentTheme);
-                localStorage.setItem('theme', currentTheme);
+            // 檢查登入狀態
+            checkLoginStatus();
+            
+            // 設定按鈕點擊事件
+            $('#settingsBtn').click(function() {
+                openSettingsModal();
             });
+            
+            // 初始化設定模態框事件
+            initializeSettingsModal();
         });
+        
+        // 檢查登入狀態
+        function checkLoginStatus() {
+            // 從localStorage檢查是否有token
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                // 驗證token是否有效
+                verifyToken(token);
+            } else {
+                isLoggedIn = false;
+                updateSettingsButton();
+            }
+        }
+        
+        // 驗證token
+        function verifyToken(token) {
+            fetch('/api/auth/verify', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    isLoggedIn = true;
+                    updateSettingsButton(data.user);
+                    // 儲存用戶資料到localStorage
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+                } else {
+                    // token無效，清除localStorage
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('userData');
+                    isLoggedIn = false;
+                    updateSettingsButton();
+                }
+            })
+            .catch(error => {
+                console.error('Token驗證失敗:', error);
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('userData');
+                isLoggedIn = false;
+                updateSettingsButton();
+            });
+        }
+        
+        // 更新設定按鈕
+        function updateSettingsButton(user = null) {
+            const settingsBtn = $('#settingsBtn');
+            const settingsIcon = $('#settingsIcon');
+            
+            if (isLoggedIn && user) {
+                settingsIcon.removeClass('fa-user').addClass('fa-user-circle');
+                settingsBtn.attr('title', `設定 - ${user.displayName || user.username}`);
+            } else {
+                settingsIcon.removeClass('fa-user-circle').addClass('fa-user');
+                settingsBtn.attr('title', '登入/設定');
+            }
+        }
+        
+        // 開啟設定模態框
+        function openSettingsModal() {
+            if (isLoggedIn) {
+                // 顯示已登入的設定內容
+                $('#loginSection').hide();
+                $('#registerSection').hide();
+                $('#userSection').show();
+                loadUserSettings();
+            } else {
+                // 顯示登入表單
+                $('#userSection').hide();
+                $('#registerSection').hide();
+                $('#loginSection').show();
+            }
+            
+            $('#settingsModal').modal('show');
+        }
+        
+        // 初始化設定模態框
+        function initializeSettingsModal() {
+            // 登入表單提交
+            $('#loginForm').submit(function(e) {
+                e.preventDefault();
+                handleLogin();
+            });
+            
+            // 註冊表單提交
+            $('#registerForm').submit(function(e) {
+                e.preventDefault();
+                handleRegister();
+            });
+            
+            // 會員資料表單提交
+            $('#profileForm').submit(function(e) {
+                e.preventDefault();
+                saveProfileSettings();
+            });
+            
+            // 介面設定表單提交
+            $('#interfaceForm').submit(function(e) {
+                e.preventDefault();
+                saveInterfaceSettings();
+            });
+            
+            // 切換登入/註冊
+            $('#showRegister').click(function() {
+                $('#loginSection').hide();
+                $('#registerSection').show();
+            });
+            
+            $('#showLogin').click(function() {
+                $('#registerSection').hide();
+                $('#loginSection').show();
+            });
+            
+            // 重置介面設定
+            $('#resetInterface').click(function() {
+                resetInterfaceSettings();
+            });
+            
+            // 登出
+            $('#logoutBtn').click(function() {
+                handleLogout();
+            });
+            
+            // 主題變更即時預覽
+            $('#theme').change(function() {
+                const theme = $(this).val();
+                applyTheme(theme);
+            });
+        }
+        
+        // 處理登入
+        function handleLogin() {
+            const username = $('#loginUsername').val();
+            const password = $('#loginPassword').val();
+            const rememberMe = $('#rememberMe').is(':checked');
+            
+            if (!username || !password) {
+                showErrorMessage('請輸入使用者名稱和密碼');
+                return;
+            }
+            
+            // 發送登入API請求
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    remember_me: rememberMe
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 儲存token和用戶資料
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+                    
+                    isLoggedIn = true;
+                    updateSettingsButton(data.user);
+                    
+                    // 切換到已登入狀態
+                    $('#loginSection').hide();
+                    $('#userSection').show();
+                    loadUserSettings();
+                    
+                    showSuccessMessage('登入成功！');
+                } else {
+                    showErrorMessage(data.message || '登入失敗');
+                }
+            })
+            .catch(error => {
+                console.error('登入失敗:', error);
+                showErrorMessage('登入失敗，請稍後再試');
+            });
+        }
+        
+        // 處理註冊
+        function handleRegister() {
+            const username = $('#registerUsername').val();
+            const email = $('#registerEmail').val();
+            const password = $('#registerPassword').val();
+            const confirmPassword = $('#confirmPassword').val();
+            
+            if (!username || !email || !password || !confirmPassword) {
+                showErrorMessage('請填寫所有必要欄位');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showErrorMessage('密碼確認不符');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showErrorMessage('密碼長度至少需要6個字元');
+                return;
+            }
+            
+            // 發送註冊API請求
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password,
+                    display_name: username
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 儲存token和用戶資料
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+                    
+                    isLoggedIn = true;
+                    updateSettingsButton(data.user);
+                    
+                    // 切換到已登入狀態
+                    $('#registerSection').hide();
+                    $('#userSection').show();
+                    loadUserSettings();
+                    
+                    showSuccessMessage('註冊成功！');
+                } else {
+                    showErrorMessage(data.message || '註冊失敗');
+                }
+            })
+            .catch(error => {
+                console.error('註冊失敗:', error);
+                showErrorMessage('註冊失敗，請稍後再試');
+            });
+        }
+        
+        // 處理登出
+        function handleLogout() {
+            if (confirm('確定要登出嗎？')) {
+                const token = localStorage.getItem('access_token');
+                
+                if (token) {
+                    // 發送登出API請求
+                    fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 無論API是否成功，都清除本地資料
+                        localStorage.removeItem('access_token');
+                        localStorage.removeItem('userData');
+                        localStorage.removeItem('rememberMe');
+                        
+                        isLoggedIn = false;
+                        updateSettingsButton();
+                        
+                        // 關閉模態框
+                        $('#settingsModal').modal('hide');
+                        
+                        showMessage('已成功登出', 'success');
+                    })
+                    .catch(error => {
+                        console.error('登出API失敗:', error);
+                        // 即使API失敗，也清除本地資料
+                        localStorage.removeItem('access_token');
+                        localStorage.removeItem('userData');
+                        localStorage.removeItem('rememberMe');
+                        
+                        isLoggedIn = false;
+                        updateSettingsButton();
+                        
+                        // 關閉模態框
+                        $('#settingsModal').modal('hide');
+                        
+                        showMessage('已成功登出', 'success');
+                    });
+                } else {
+                    // 沒有token，直接清除本地資料
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('userData');
+                    localStorage.removeItem('rememberMe');
+                    
+                    isLoggedIn = false;
+                    updateSettingsButton();
+                    
+                    // 關閉模態框
+                    $('#settingsModal').modal('hide');
+                    
+                    showMessage('已成功登出', 'success');
+                }
+            }
+        }
+        
+        // 載入使用者設定
+        function loadUserSettings() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                showErrorMessage('請先登入');
+                return;
+            }
+            
+            // 從API獲取最新的用戶資料
+            fetch('/api/auth/profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const userData = data.user;
+                    
+                    // 載入會員資料
+                    $('#username').val(userData.username || '');
+                    $('#email').val(userData.email || '');
+                    $('#displayName').val(userData.display_name || '');
+                    $('#phone').val(userData.phone || '');
+                    $('#bio').val(userData.bio || '');
+                    $('#memberSince').val(userData.member_since || '');
+                    $('#lastLogin').val(userData.last_login || '');
+                    
+                    // 更新localStorage
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    
+                    // 載入介面設定
+                    const settings = JSON.parse(localStorage.getItem('interfaceSettings') || '{}');
+                    $('#theme').val(settings.theme || 'light');
+                    $('#language').val(settings.language || 'zh-TW');
+                    $('#fontSize').val(settings.fontSize || 'medium');
+                    $('#sidebarCollapsed').prop('checked', settings.sidebarCollapsed || false);
+                    $('#chartTheme').val(settings.chartTheme || 'default');
+                    $('#timezone').val(settings.timezone || 'Asia/Taipei');
+                    $('#emailNotifications').prop('checked', settings.emailNotifications !== false);
+                    $('#browserNotifications').prop('checked', settings.browserNotifications !== false);
+                    $('#tradeNotifications').prop('checked', settings.tradeNotifications !== false);
+                } else {
+                    showErrorMessage(data.message || '載入用戶資料失敗');
+                }
+            })
+            .catch(error => {
+                console.error('載入用戶資料失敗:', error);
+                showErrorMessage('載入用戶資料失敗，請稍後再試');
+                
+                // 如果API失敗，使用localStorage中的資料作為備用
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                $('#username').val(userData.username || '');
+                $('#email').val(userData.email || '');
+                $('#displayName').val(userData.display_name || '');
+                $('#phone').val(userData.phone || '');
+                $('#bio').val(userData.bio || '');
+                $('#memberSince').val(userData.member_since || '');
+                $('#lastLogin').val(userData.last_login || '');
+            });
+        }
+        
+        // 儲存會員資料
+        function saveProfileSettings() {
+            const profileData = {
+                email: $('#email').val(),
+                display_name: $('#displayName').val(),
+                phone: $('#phone').val(),
+                bio: $('#bio').val()
+            };
+            
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                showErrorMessage('請先登入');
+                return;
+            }
+            
+            // 發送更新會員資料API請求
+            fetch('/api/auth/profile', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(profileData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 更新localStorage中的用戶資料
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+                    
+                    // 更新按鈕顯示
+                    updateSettingsButton(data.user);
+                    
+                    showSuccessMessage('會員資料已成功儲存');
+                } else {
+                    showErrorMessage(data.message || '儲存失敗');
+                }
+            })
+            .catch(error => {
+                console.error('儲存會員資料失敗:', error);
+                showErrorMessage('儲存失敗，請稍後再試');
+            });
+        }
+        
+        // 儲存介面設定
+        function saveInterfaceSettings() {
+            const settings = {
+                theme: $('#theme').val(),
+                language: $('#language').val(),
+                fontSize: $('#fontSize').val(),
+                sidebarCollapsed: $('#sidebarCollapsed').is(':checked'),
+                chartTheme: $('#chartTheme').val(),
+                timezone: $('#timezone').val(),
+                emailNotifications: $('#emailNotifications').is(':checked'),
+                browserNotifications: $('#browserNotifications').is(':checked'),
+                tradeNotifications: $('#tradeNotifications').is(':checked')
+            };
+            
+            // 儲存到localStorage
+            localStorage.setItem('interfaceSettings', JSON.stringify(settings));
+            
+            // 套用設定
+            applyInterfaceSettings(settings);
+            
+            showSuccessMessage('介面設定已成功儲存');
+        }
+        
+        // 套用介面設定
+        function applyInterfaceSettings(settings) {
+            // 套用主題
+            applyTheme(settings.theme);
+            
+            // 套用字體大小
+            $('body').removeClass('font-small font-medium font-large');
+            $('body').addClass(`font-${settings.fontSize}`);
+            
+            // 套用側邊欄設定
+            if (settings.sidebarCollapsed) {
+                $('.sidebar').addClass('collapsed');
+                $('.main-content').addClass('expanded');
+            } else {
+                $('.sidebar').removeClass('collapsed');
+                $('.main-content').removeClass('expanded');
+            }
+            
+            // 套用語言設定
+            document.documentElement.lang = settings.language;
+            
+            // 套用時區設定
+            window.userTimezone = settings.timezone;
+        }
+        
+        // 重置介面設定
+        function resetInterfaceSettings() {
+            if (confirm('確定要重置所有介面設定為預設值嗎？')) {
+                // 重置表單
+                $('#theme').val('light');
+                $('#language').val('zh-TW');
+                $('#fontSize').val('medium');
+                $('#sidebarCollapsed').prop('checked', false);
+                $('#chartTheme').val('default');
+                $('#timezone').val('Asia/Taipei');
+                $('#emailNotifications').prop('checked', true);
+                $('#browserNotifications').prop('checked', true);
+                $('#tradeNotifications').prop('checked', true);
+                
+                // 清除localStorage
+                localStorage.removeItem('interfaceSettings');
+                
+                // 套用預設設定
+                applyInterfaceSettings({
+                    theme: 'light',
+                    language: 'zh-TW',
+                    fontSize: 'medium',
+                    sidebarCollapsed: false,
+                    chartTheme: 'default',
+                    timezone: 'Asia/Taipei',
+                    emailNotifications: true,
+                    browserNotifications: true,
+                    tradeNotifications: true
+                });
+                
+                showSuccessMessage('介面設定已重置為預設值');
+            }
+        }
+        
+        // 顯示成功訊息
+        function showSuccessMessage(message) {
+            const alertHtml = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            $('#settingsModal .modal-body').prepend(alertHtml);
+            
+            setTimeout(function() {
+                $('#settingsModal .alert').alert('close');
+            }, 3000);
+        }
+        
+        // 顯示錯誤訊息
+        function showErrorMessage(message) {
+            const alertHtml = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            $('#settingsModal .modal-body').prepend(alertHtml);
+            
+            setTimeout(function() {
+                $('#settingsModal .alert').alert('close');
+            }, 3000);
+        }
         
         // 套用主題
         function applyTheme(theme) {
@@ -675,6 +1721,9 @@
                     window.codeEditor.setOption('theme', 'eclipse');
                 }
             }
+            
+            // 儲存主題設定
+            localStorage.setItem('theme', theme);
         }
         
         // 自定義勾選開關功能

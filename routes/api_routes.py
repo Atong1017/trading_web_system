@@ -19,6 +19,7 @@ from api.chart_api import ChartAPI
 from api.sample_data_api import SampleDataAPI
 from api.stock_list_api import StockListAPI
 from api.jupyter_api import JupyterAPI
+from api.auth_api import AuthAPI
 from config.trading_config import TradingConfig
 
 # 建立路由器
@@ -476,4 +477,173 @@ async def clear_jupyter_variables(request: Request):
 # Jupyter 獲取全域變數 API
 @router.get("/api/jupyter/variables")
 async def get_jupyter_variables(request: Request):
-    return JupyterAPI.get_global_variables()
+    return await JupyterAPI.get_variables(request)
+
+# 認證相關API路由
+@router.post("/api/auth/login")
+async def login_user(request: Request):
+    """用戶登入"""
+    try:
+        data = await request.json()
+        username = data.get("username")
+        password = data.get("password")
+        remember_me = data.get("remember_me", False)
+        
+        if not username or not password:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "message": "請提供使用者名稱和密碼"}
+            )
+        
+        result = await AuthAPI.login(username, password, remember_me)
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"登入失敗: {str(e)}"}
+        )
+
+@router.post("/api/auth/register")
+async def register_user(request: Request):
+    """用戶註冊"""
+    try:
+        data = await request.json()
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
+        display_name = data.get("display_name")
+        
+        if not username or not email or not password:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "message": "請提供所有必要欄位"}
+            )
+        
+        result = await AuthAPI.register(username, email, password, display_name)
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"註冊失敗: {str(e)}"}
+        )
+
+@router.get("/api/auth/profile")
+async def get_user_profile(request: Request):
+    """獲取用戶資料"""
+    try:
+        # 從請求標頭獲取token
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"status": "error", "message": "缺少認證token"}
+            )
+        
+        token = auth_header.split(" ")[1]
+        result = await AuthAPI.get_user_profile(token)
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"獲取用戶資料失敗: {str(e)}"}
+        )
+
+@router.put("/api/auth/profile")
+async def update_user_profile(request: Request):
+    """更新用戶資料"""
+    try:
+        # 從請求標頭獲取token
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"status": "error", "message": "缺少認證token"}
+            )
+        
+        token = auth_header.split(" ")[1]
+        data = await request.json()
+        
+        result = await AuthAPI.update_user_profile(token, data)
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"更新用戶資料失敗: {str(e)}"}
+        )
+
+@router.post("/api/auth/change-password")
+async def change_user_password(request: Request):
+    """修改密碼"""
+    try:
+        # 從請求標頭獲取token
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"status": "error", "message": "缺少認證token"}
+            )
+        
+        token = auth_header.split(" ")[1]
+        data = await request.json()
+        current_password = data.get("current_password")
+        new_password = data.get("new_password")
+        
+        if not current_password or not new_password:
+            return JSONResponse(
+                status_code=400,
+                content={"status": "error", "message": "請提供當前密碼和新密碼"}
+            )
+        
+        result = await AuthAPI.change_password(token, current_password, new_password)
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"修改密碼失敗: {str(e)}"}
+        )
+
+@router.post("/api/auth/logout")
+async def logout_user(request: Request):
+    """用戶登出"""
+    try:
+        # 從請求標頭獲取token
+        auth_header = request.headers.get("Authorization")
+        token = None
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+        
+        result = await AuthAPI.logout(token)
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"登出失敗: {str(e)}"}
+        )
+
+@router.post("/api/auth/verify")
+async def verify_token(request: Request):
+    """驗證token"""
+    try:
+        # 從請求標頭獲取token
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"status": "error", "message": "缺少認證token"}
+            )
+        
+        token = auth_header.split(" ")[1]
+        result = await AuthAPI.verify_token_api(token)
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Token驗證失敗: {str(e)}"}
+        )
