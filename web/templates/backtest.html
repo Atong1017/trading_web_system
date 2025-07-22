@@ -1169,8 +1169,10 @@ $(document).ready(function() {
         
         if (dataSource === 'api') {
             $('#excel_help').text('API模式：請上傳包含證券代碼和日期的Excel檔案，股價資料將從API取得');
+        } else if (dataSource === 'cache') {
+            $('#excel_help').text('快取模式：請上傳包含證券代碼和日期的Excel檔案，股價資料將從API取得');
         } else {
-            $('#excel_help').text('Excel模式：請上傳包含證券代碼、日期、開高低收盤價的Excel檔案');
+            $('#excel_help').text('Excel模式：請上傳包含證券代碼和日期的Excel檔案，股價資料將從API取得');
         }
     }
     
@@ -1188,21 +1190,21 @@ $(document).ready(function() {
         let requiredColumns = [];
         let exampleData = [];
         
-        if (dataSource === 'api') {
-            helpText = '<h6>API模式檔案格式：</h6>';
-            requiredColumns = ['stock_id', 'date'];
-            exampleData = [
-                ['2330', '2024-01-01'],
-                ['2330', '2024-01-02']
-            ];
-        } else {
-            helpText = '<h6>Excel模式檔案格式：.xlsx, .csv</h6>';
-            requiredColumns = ['stock_id', 'date', 'open', 'high', 'low', 'close'];
-            exampleData = [
-                ['2330', '2024-01-01', '100', '105', '98', '103'],
-                ['2330', '2024-01-02', '103', '108', '102', '106']
-            ];
-        }
+        // if (dataSource === 'api') {
+        helpText = '<h6>API模式檔案格式：</h6>';
+        requiredColumns = ['stock_id', 'date'];
+        exampleData = [
+            ['2330', '2024-01-01'],
+            ['2330', '2024-01-02']
+        ];
+        // } else {
+        //     helpText = '<h6>Excel模式檔案格式：.xlsx, .csv</h6>';
+        //     requiredColumns = ['stock_id', 'date', 'open', 'high', 'low', 'close'];
+        //     exampleData = [
+        //         ['2330', '2024-01-01', '100', '105', '98', '103'],
+        //         ['2330', '2024-01-02', '103', '108', '102', '106']
+        //     ];
+        // }
         
         helpText += `
             <p>Excel檔案需包含以下欄位：</p>
