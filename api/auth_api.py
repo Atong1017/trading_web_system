@@ -13,9 +13,12 @@ from typing import Optional, Dict, Any
 from fastapi import HTTPException
 import os
 
+def print_log(message):
+    print(f"********** AuthAPI: {message}")
+
 class AuthAPI:
     """用戶認證API類別"""
-    
+    print_log("AuthAPI 類別初始化")
     # 模擬用戶資料庫（實際應用中應該使用真實的資料庫）
     USERS_DB = {
         "admin": {
